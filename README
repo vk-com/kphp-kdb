@@ -8,3 +8,6 @@ Source code is licensed mostly under GPL version 2 or later (see file LICENSE fo
 Some portions are licensed under LGPL version 2 or later (see file LICENSE.LGPL for the full text and file LGPLv2 for list of all authors). These are the files which might be later used to create a library, useful for all engines as well as any other future third-party projects.
 
 Each source file should have a header describing its license (GPL or LGPL) and precise list of contributors. If no such header is present, GPLv2 (or later) is assumed, as described in files GPLv2 and LICENSE.
+
+Russian-language documentation is available at [[docs/ru/]].
+English documentation not available yet, sorry.
