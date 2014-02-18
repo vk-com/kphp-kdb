@@ -1,0 +1,12 @@
+/var/log/engine/*.log {
+	daily
+	missingok
+	compress
+	delaycompress
+	notifempty
+	create 640 kitten kitten
+	sharedscripts
+	postrotate
+		/etc/init.d/engine rotate-logs > /dev/null
+	endscript
+}

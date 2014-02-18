@@ -1,0 +1,24 @@
+Нужные библиотеки (помимо совсем стандартных)
+
+- openssl
+- libz
+- glibc
+
+
+- libre2 ( http://code.google.com/p/re2/ ) libpcre только для KPHP
+
+- libGraphicsMagick libtiff libfreetype libjasper libjpeg libpng libbz2 libgomp libwebp только для image-engine. Good luck!
+
+- liblzma только для pack-binlog
+
+- libtermcap libreadline только для tlclient
+
+- libaspell только для spell-engine
+
+- libfuse libdl только для filesys-engine
+
+Компилируется только под Linux достаточно новых версий (2.6.18+, желательно 3.0+).
+
+`make all` или `make` компилирует все подпроекты, кроме kphp, image, filesys, spell, tl, binlog.
+
+Предподчительнее использовать ld gold, а не ld bfd.

@@ -1,0 +1,15 @@
+*.o
+objs
+objs32
+dep
+dep32
+objsp
+objs32p
+depp
+dep32p
+gmon.out
+nohup.out
+.build
+*~
+*.err
+*.out

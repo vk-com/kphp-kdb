@@ -1,0 +1,75 @@
+/*
+    This file is part of VK/KittenDB-Engine.
+
+    VK/KittenDB-Engine is free software: you can redistribute it and/or modify
+    it under the terms of the GNU General Public License as published by
+    the Free Software Foundation, either version 2 of the License, or
+    (at your option) any later version.
+
+    VK/KittenDB-Engine is distributed in the hope that it will be useful,
+    but WITHOUT ANY WARRANTY; without even the implied warranty of
+    MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+    GNU General Public License for more details.
+
+    You should have received a copy of the GNU General Public License
+    along with VK/KittenDB-Engine.  If not, see <http://www.gnu.org/licenses/>.
+
+    This program is released under the GPL with the additional exemption
+    that compiling, linking, and/or using OpenSSL is allowed.
+    You are free to remove this exemption from derived works.
+
+    Copyright 2010-2013 Vkontakte Ltd
+              2010-2013 Arseny Smirnov
+              2010-2013 Aliaksei Levin
+*/
+
+#include "dl-default.h"
+#include "dl-hashable.h"
+
+// pair <ll, int>
+typedef struct {
+  ll x;
+  int y;
+} hmap_pair_ll_int;
+
+#define dl_hash_hmap_pair_ll_int(p) ((p).x)
+
+// hash_map <long long, int>
+#define DATA_T hmap_pair_ll_int
+#define TNAME hmap_ll_int
+#define IMPLEMENTATION OPEN
+#define NOZERO
+#define STORE_HASH OFF
+#define STRICT OFF
+#define EMPTY(p) ((p).x == 0)
+
+#if defined (DL_HEADER)
+#  include "dl-hashtable.h"
+#else
+#  include "dl-hashtable.c"
+#endif
+
+#include "dl-undef.h"
+
+/*
+ *
+ * hash_map <ll, int>
+ *
+ */
+#define DATA_T ll
+#define RDATA_T int
+#define TNAME map_ll_int
+#define IMPLEMENTATION OPEN
+#define STORE_HASH OFF
+#define STRICT OFF
+#define MAP ON
+#define EMPTY(p) (p == 0)
+
+#if defined (DL_HEADER)
+#  include "dl-hashtable.h"
+#else
+#  include "dl-hashtable.c"
+#endif
+
+#include "dl-undef.h"
+

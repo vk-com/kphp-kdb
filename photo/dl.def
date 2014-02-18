@@ -1,0 +1,344 @@
+/*
+    This file is part of VK/KittenDB-Engine.
+
+    VK/KittenDB-Engine is free software: you can redistribute it and/or modify
+    it under the terms of the GNU General Public License as published by
+    the Free Software Foundation, either version 2 of the License, or
+    (at your option) any later version.
+
+    VK/KittenDB-Engine is distributed in the hope that it will be useful,
+    but WITHOUT ANY WARRANTY; without even the implied warranty of
+    MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+    GNU General Public License for more details.
+
+    You should have received a copy of the GNU General Public License
+    along with VK/KittenDB-Engine.  If not, see <http://www.gnu.org/licenses/>.
+
+    This program is released under the GPL with the additional exemption
+    that compiling, linking, and/or using OpenSSL is allowed.
+    You are free to remove this exemption from derived works.
+
+    Copyright 2011-2013 Vkontakte Ltd
+              2011-2013 Arseny Smirnov
+              2011-2013 Aliaksei Levin
+*/
+
+#define _FILE_OFFSET_BITS 64
+
+#include "dl-default.h"
+#include "dl-hashable.h"
+
+/*
+ * PAIR_P_INT
+ * NB: pair_int_int int dl_qsort will be compared only by first int!
+ */
+
+#define dl_scmp_pair_int_int(a, b) ((a).x < (b).x)
+
+#define TA int
+#define TB int
+#define TNAME pair_int_int
+#if defined (DL_HEADER)
+#  include "dl-pair.h"
+#else
+#  include "dl-pair.c"
+#endif
+#include "dl-undef.h"
+
+#define TA pair_int_int
+#define TB int
+#define TNAME pair_p_int
+#if defined (DL_HEADER)
+#  include "dl-pair.h"
+#else
+#  include "dl-pair.c"
+#endif
+#include "dl-undef.h"
+
+#include "dl-utils.h"
+#include "dl-comparable.h"
+#define TA pair_int_int
+#include "dl-sort.def"
+#include "dl-undef.h"
+
+/**** end of PAIR_P_INT ****/
+
+#include "dl-utils.h"
+#include "dl-comparable.h"
+#define TA ll
+#include "dl-sort.def"
+#include "dl-undef.h"
+
+#if defined (DL_HEADER)
+#  include "dl-vector-def.h"
+#  include "dl-perm.h"
+#endif
+
+
+
+
+#define TA int
+#define TB vptr
+#define TNAME pair_int_vptr
+
+#define dl_scmp_pair_int_vptr(a, b) ((a).x < (b).x)
+#define dl_eq_pair_int_vptr(a, b) ((a).x == (b).x)
+
+#define DL_COMPARABLE_OFF
+
+#if defined (DL_HEADER)
+#  include "dl-pair.h"
+#else
+#  include "dl-pair.c"
+#endif
+#include "dl-undef.h"
+
+
+#include "dl-utils.h"
+#include "dl-comparable.h"
+#define TA pair_int_vptr
+#include "dl-sort.def"
+#include "dl-undef.h"
+
+#define TA int
+#include "dl-sort.def"
+#include "dl-undef.h"
+
+/*
+ *
+ * hash_set <int *>
+ *
+ */
+typedef int *intp;
+#define dl_hash_intp(p) (*p)
+#define DATA_T intp
+#define TNAME set_intp
+#define IMPLEMENTATION OPEN
+#define STORE_HASH OFF
+#define STRICT OFF
+#define WAIT_FREE ON
+#define EMPTY(p) (p == NULL)
+
+#if defined (DL_HEADER)
+#  include "dl-hashtable.h"
+#else
+#  include "dl-hashtable.c"
+#endif
+
+#include "dl-undef.h"
+
+
+/*
+ *
+ * hash_set <int>
+ *
+ */
+#define DATA_T int
+#define TNAME set_int
+#define IMPLEMENTATION OPEN
+#define STORE_HASH OFF
+#define STRICT OFF
+#define WAIT_FREE OFF
+#define EMPTY(p) (p == 0)
+
+#if defined (DL_HEADER)
+#  include "dl-hashtable.h"
+#else
+#  include "dl-hashtable.c"
+#endif
+
+#include "dl-undef.h"
+
+
+/*
+ *
+ * hash_map <ll, int>
+ *
+ */
+#define C1 2
+#define C2 3 / 2
+#define MIN_SIZE 2
+#define DATA_T ll
+#define RDATA_T int
+#define TNAME map_ll_int
+#define IMPLEMENTATION OPEN
+#define STORE_HASH OFF
+#define STRICT OFF
+#define WAIT_FREE OFF
+#define MAP ON
+#define EMPTY(p) (p == 0)
+
+#if defined (DL_HEADER)
+#  include "dl-hashtable.h"
+#else
+#  include "dl-hashtable.c"
+#endif
+
+#include "dl-undef.h"
+
+
+/*
+ *
+ * hash_map <int, vptr>
+ *
+ */
+//TODO improve C1 and C2 for all engines
+#define C1 2
+#define C2 3 / 2
+#define MIN_SIZE 2
+#define DATA_T int
+#define RDATA_T vptr
+#define TNAME map_int_vptr
+#define IMPLEMENTATION OPEN
+#define STORE_HASH OFF
+#define STRICT OFF
+#define WAIT_FREE OFF
+#define MAP ON
+#define EMPTY(p) (p == 0)
+
+#if defined (DL_HEADER)
+#  include "dl-hashtable.h"
+#else
+#  include "dl-hashtable.c"
+#endif
+
+#include "dl-undef.h"
+
+/*
+ *
+ * hash_map <int, int>
+ *
+ */
+#define C1 2
+#define C2 3 / 2
+#define DATA_T int
+#define RDATA_T int
+#define TNAME map_int_int
+#define IMPLEMENTATION OPEN
+#define STORE_HASH OFF
+#define MAP ON
+#define EMPTY(p) (p == 0)
+
+#if defined (DL_HEADER)
+#  include "dl-hashtable.h"
+#else
+#  include "dl-hashtable.c"
+#endif
+
+#include "dl-undef.h"
+
+
+/*
+ *
+ * vector <int>
+ *
+ */
+#define TA int
+#define TNAME vector_int
+
+#if defined (DL_HEADER)
+#  include "dl-vector.h"
+#else
+#  include "dl-vector.c"
+#endif
+
+#include "dl-undef.h"
+
+
+/*
+ *
+ * vector <ll>
+ *
+ */
+#define TA ll
+#define TNAME vector_ll
+
+#if defined (DL_HEADER)
+#  include "dl-vector.h"
+#else
+#  include "dl-vector.c"
+#endif
+
+#include "dl-undef.h"
+
+
+/*
+ *
+ * vector <pair_int_int>
+ *
+ */
+#define TA pair_int_int
+#define TNAME vector_pii
+
+#if defined (DL_HEADER)
+#  include "dl-vector.h"
+#else
+#  include "dl-vector.c"
+#endif
+
+#include "dl-undef.h"
+
+
+/*
+ *
+ * hash_map <long long, vector_pair_int_int>
+ *
+ */
+#define DATA_T ll
+#define RDATA_T vector_pii
+#define TNAME map_ll_vector_pii
+#define IMPLEMENTATION OPEN
+#define STORE_HASH OFF
+#define MAP ON
+#define EMPTY(p) (p == 0)
+
+#if defined (DL_HEADER)
+#  include "dl-hashtable.h"
+#else
+#  include "dl-hashtable.c"
+#endif
+
+#include "dl-undef.h"
+
+/*
+ *
+ * hash_map <int, vector_pair_int_int>
+ *
+ */
+#define DATA_T int
+#define RDATA_T vector_pii
+#define TNAME map_int_vector_pii
+#define IMPLEMENTATION OPEN
+#define STORE_HASH OFF
+#define MAP ON
+#define EMPTY(p) (p == 0)
+
+#if defined (DL_HEADER)
+#  include "dl-hashtable.h"
+#else
+#  include "dl-hashtable.c"
+#endif
+
+#include "dl-undef.h"
+
+
+/*
+ *
+ * hash_set <long long>
+ *
+ */
+#define DATA_T ll
+#define TNAME set_ll
+#define IMPLEMENTATION OPEN
+#define STORE_HASH OFF
+#define STRICT OFF
+#define WAIT_FREE OFF
+#define EMPTY(p) (p == 0)
+
+#if defined (DL_HEADER)
+#  include "dl-hashtable.h"
+#else
+#  include "dl-hashtable.c"
+#endif
+
+#include "dl-undef.h"

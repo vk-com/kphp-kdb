@@ -1,0 +1,187 @@
+=== Типы данных ===
+* int - 32-битное целое число со знаком 
+* str - Строка любая последовательность символов заключенных в кавычки. 
+* image - Изображение GraphicsMagic 
+Зарезервированные команды Форта не зависят от регистра.
+
+=== Команды Форта для работы с image-engine ===
+Все аргументы указанные в столбце команды убираются со стека. То что указано в описание, как результат кладется на стек.
+<b>Пути к файлам должны быть абсолютными, а не относительными.</b>
+{|
+|+ 
+|-
+! Команда
+! Описание
+! Версия 
+|-
+| filename(str) <b>LOAD</b>
+| Загружает изображение. 
+| 
+|-
+| filename(str) <b>PING</b>
+| Загружает только заголовок изображения
+| 1.32
+|-
+| image filename(str) quality(int)  <b>SAVE</b>
+| Сохраняет изображение (формат в зависимости от расширения). 
+| 
+|-
+|-
+| filename(str) <b>GETIMAGESIZE</b>
+| width height. Возвращает размеры изображения. image-engine читает только заголовок, т.е. само изображение не загружается в память.
+| 1.32
+|-
+| image attr(str) <b>GETATTR</b>
+| Возвращает атрибут изображения (загруженного ранее, командой PING). attr может быть, "EXIF:Orientation", "EXIF:Model", "EXIF:GPSLongitude" (без пробела!) , и т.д.
+| 1.32
+|-
+| image angle(int) <b>ROTATE</b>
+| Поворот на 90*angle градусов. Возвращает измененное изображение.
+| 
+|-
+| image new_width(int) new_heigh(int) <b>RESIZE</b>
+| Изменяет размер изображения. Возвращает измененное изображение.
+| 
+|-
+| image x(int) y(int) width(int) height(int) <b>CROP</b>
+| Вырезает часть изображения. Возвращает измененное изображение.
+| 
+|-
+| original_filename(str) angle(int) resize_filter(str) quality(int) max_save_size(str) unlink_orig_file(int)  width_s(int) height_s(int) filename_s(str) ... width_w(int) height_w(int) filename_w(str) <b>GENERATE_THUMBS</b>
+| Аналог saveAlbumPhotosFlash. Функция с 24 аргументами. max_save_size(str) - "w", "z", "y", "x", "m", "s" (если передана любая другая строка считается, что максимальный сохраняемый размер "w". 
+| 
+|-
+| filename(str)  <b>MD5_FILE_HEX</b>
+| Помещает на стек строку из 32 шестнадцатеричных символов - md5 сумму заданного файла. 
+| 1.26
+|-
+| image box_width(int) box_height(int) filter(str) <b>RESIZE_KEEP_ASPECT_RATIO</b>
+| Изменяет размер изображения сохраняя его пропорции. Возвращает измененное изображение.
+| 1.27
+|-
+| image box_width(int) box_height(int) filter(str) <b>MINIFY_KEEP_ASPECT_RATIO</b>
+| Изменяет размер изображения сохраняя его пропорции, при этом никогда не увеличивает исходное изображение. Возвращает измененное изображение.
+| 1.28
+|-
+| image box_width(int) box_height(int) filter(str) <b>RESIZE_BORDERLESS</b>
+| Изменяет размер изображения сохраняя его пропорции, а потом обрезает горизонтальные или вертикальные поля. Возвращает измененное изображение.
+| 1.29
+|-
+| original_filename(str) angle(int) resize_filter(str) quality(int) required_save_size(int) max_save_size(int) unlink_orig_file(int)  width_0(int) height_0(int) filename_0(str) ... width_n-1(int) height_n-1(int) filename_n-1(str) n(int) width_0(int) min_height_0(int) filename_0(str) ... width_m-1(int) min_height_m-1(int) max_height_m-1(int) filename_m-1(str) m(int) <b>GENERATE_THUMBS2</b>
+| Аналог saveAlbumPhotosFlash. Функция с переменным числом аргуметов.  '''n''' - количество передаваемых размеров, размеры нумеруются начиная с 0 (аналогичен max_save_size(str) из '''GENERATE_THUMBS''').
+Можно отдельно указать qualitу для каждой миниатюры, если к имени файла дописать "?q=$quality".
+| 1.29
+|-
+| image <b>KID16_HEX</b>
+| Помещает на стек строку из 32 шестнадцатеричных символов - kitten image digest исходного изображения. 
+| 1.30
+|-
+| mp3_filename(str) <b>KAD16_HEX</b>
+| Помещает на стек строку из 32 шестнадцатеричных символов - kitten audio digest исходного mp3 файла. 
+| 1.33
+|-
+| mp3_filename(str) <b>KAD16V2_HEX</b>
+| Помещает на стек строку из 32 шестнадцатеричных символов - kitten audio digest исходного mp3 файла. В этой версии КАD исправлена вычисление длины аудиозаписи, не используется вызов mpg123_length.
+| 1.36
+|-
+| image red(int) green(int) blue(int) <b>REPLACE_TRANSPARENT</b>
+| Помещает на стек изображение у которого заменён прозрачный цвет на указанный. Если у изображения нет прозрачного цвета или цветовое пространство не RGB, изображение остаётся без изменений. Эта функция добавлена для совместимости с <b>GENERATE_THUMBS2</b>, которая на начальном этапе аналогичным образом заменяет прозрачный цвет на белый.
+| 1.37
+|}
+
+Начиная с версии 1.31, '''image-engine''' использует поле orientation  в функциях '''GENERATE_THUMBS''', '''GENERATE_THUMBS2''' для коррекции угла поворота, это поле GraphicsMagick инициализирует при загрузке jpeg изображения с помощью поля Orientation из метаданных профайла '''EXIF'''.
+
+=== Другие команды Форта ===
+{|
+|+ 
+|-
+! Команда
+! Описание 
+|-
+| x(int) y(int) <b>+</b> || x+y 
+|-
+| x(int) y(int) <b>-</b> || x-y 
+|-
+| x(int) y(int) <b>*</b> || x*y 
+|-
+| x(int) y(int) <b> < </b> || x < y
+|-
+| x(int) y(int) <b> > </b> ||
+|-
+| x(int) y(int) <b> = </b> ||
+|-
+| x(int) y(int) <b> <> </b> ||
+|-
+| x(int) y(int) <b> <= </b> ||
+|-
+| x(int) y(int) <b> >= </b> ||
+|-
+| x(int) y(int) <b>/</b> || x/y. Если y = 0, задача профейлится с ошибкой "division by zero" 
+|-
+| x(int) y(int) <b>MIN</b> || 
+|-
+| x(int) y(int) <b>MAX</b> || 
+|-
+| x y <b>SWAP</b> || y x 
+|-
+| x y z <b>ROT</b> || y z x 
+|-
+| <b>DUP</b> || Дублирует значение на стеке, если дублируется изображение копируется только ссылка на изображение и увеличивается счетчик ссылок. 
+|-
+| x y <b>OVER</b> || x y x. Если x изображение, то копируется только ссылка на изображение и увеличивается счетчик ссылок.
+|-
+| x <b>DROP</b> || Удаляет элемент с вершины стека. Если на вершине стека изображение, то уменьшается его счетчик ссылок. Если счетчик ссылок стал равным нулю, то изображение удаляется из памяти. 
+|-
+| x(int or str) <b>PRINTLN</b> || Печает в output x и перевод строки. Output можно получить выполнив после завершение задачи команду $MC_Image->get("output{$prog_id}"); 
+|-
+| x(int) <b>IF</b> cmd<sub>1</sub> cmd<sub>2</sub> ... cmd<sub>n</sub><b>THEN</b>
+|| Условный оператор, x = -1 (истина), x = 0 (ложь). Если x - истина будут выполнены команды: cmd<sub>1</sub> cmd<sub>2</sub> ... cmd<sub>n</sub>
+|-
+| x(int) <b>IF</b> cmd<sub>1</sub> cmd<sub>2</sub> ... cmd<sub>n</sub><b>ELSE</b> ecmd<sub>1</sub> ecmd<sub>2</sub> ... ecmd<sub>k</sub><b>THEN</b>
+|| Условный оператор. Если x - истина будут выполнены команды: cmd<sub>1</sub> cmd<sub>2</sub> ... cmd<sub>n</sub>. Иначе ecmd<sub>1</sub> ecmd<sub>2</sub> ... ecmd<sub>k.  </sub>
+|}
+
+==== Фильтры ====
+* "box" 
+* "blackman" 
+* "bessel" 
+* "cubic" 
+* "catrom" 
+* "gaussian" 
+* "hermite" 
+* "hanning" 
+* "lanczos" 
+* "mitchell" 
+* "point" 
+* "quadratic" 
+* "sinc" 
+* "triangle" 
+=== Memcached протокол ===
+ $prog_id - <b>случайный</b> 64-битный идентификатор задачи 
+Добавление задачи в очередь задач image-enginа выполняется командой: 
+<tt> $MC_Image->set("request{$prog_id},{$t}", $forth_program); </tt>
+Задачи будут выполнятся в порядке возрастания величины ($now + $t), где $now - unixtime время прихода задачи на сервер. 
+
+Получение информации о выполнении задачи выполняется командой: 
+<tt>$r = $MC_Image->get("request{$prog_id}");</tt>
+* <tt>$r === 0</tt> (успешное завершение задачи) 
+* <tt>$r === 1</tt> (не успешное завершение задачи) 
+* <tt>$r === 2</tt> (задача ожидает своей очереди) 
+* <tt>$r === 3</tt> (задача выполняется) 
+* <tt>$r === false</tt> (какая-то другая ошибка) 
+<tt>$r = $MC_Image->get ("output{$prog_id}");</tt>
+Если задача завершилась (успешно или не успешно),  возвращает строку содержащую 
+в результат работы команд PRINTLN. 
+Если задача завершилась не успешно, последняя строка содержит сообщение об ошибке, а строки перед ней 
+то что лежало на стеке. 
+Если длина $r превышает 256K, $r будет обрезана. 
+
+=== Извлечение EXIF заголовков (пример Форт программы) ===
+<tt>
+"test.jpg" PING
+DUP "EXIF:Orientation" GETATTR PRINTLN
+DUP "EXIF:Model" GETATTR PRINTLN
+DUP "EXIF:GPSLongitude" GETATTR PRINTLN
+DROP
+</tt>
+

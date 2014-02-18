@@ -1,0 +1,103 @@
+/*
+    This file is part of VK/KittenDB-Engine Library.
+
+    VK/KittenDB-Engine Library is free software: you can redistribute it and/or modify
+    it under the terms of the GNU Lesser General Public License as published by
+    the Free Software Foundation, either version 2 of the License, or
+    (at your option) any later version.
+
+    VK/KittenDB-Engine Library is distributed in the hope that it will be useful,
+    but WITHOUT ANY WARRANTY; without even the implied warranty of
+    MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+    GNU Lesser General Public License for more details.
+
+    You should have received a copy of the GNU Lesser General Public License
+    along with VK/KittenDB-Engine Library.  If not, see <http://www.gnu.org/licenses/>.
+
+    Copyright 2010-2013 Vkontakte Ltd
+              2010-2013 Arseny Smirnov
+              2010-2013 Aliaksei Levin
+*/
+
+#include <stdlib.h>
+
+#include "dl-comparable.h"
+
+#if defined DL_HEADER
+#  define BODY(X...) ;
+#else
+#  define BODY(X...) X
+#endif
+
+#define DL_QSORT_TITLE \
+  void DL_ADD_SUFF(dl_qsort, TA) (TA *a, int n)
+#define DL_UNIQUE_TITLE \
+  int DL_ADD_SUFF(dl_unique, TA) (TA *a, int n)
+#define DL_FIND_TITLE \
+  int DL_ADD_SUFF(dl_find, TA) (TA *a, int n, TA val)
+
+#define DL_UNIQUE_BODY {                         \
+  int i, nn = 0;                                 \
+  for (i = 0; i < n; i++) {                      \
+    if (i == 0 || !DL_EQ(TA)(a[i], a[i - 1])) {  \
+      a[nn++] = a[i];                            \
+    }                                            \
+  }                                              \
+  return nn;                                     \
+}
+
+
+//TODO: I don't like this code...
+#define cmp(a, b) DL_SCMP(TA)(a, b)
+#define swap(a, b, c) (c) = (a), (a) = (b), (b) = (c)
+
+#define DL_QSORT_BODY {          \
+  if (n <= 1) {                  \
+    return;                      \
+  }                              \
+  TA c = a[rand() % n], tmp;     \
+  TA *i = &a[0], *j = &a[n - 1]; \
+                                 \
+  while (i <= j) {               \
+    while (cmp (*i, c)) {        \
+      i++;                       \
+    }                            \
+    while (cmp (c, *j)) {        \
+      j--;                       \
+    }                            \
+    if (i <= j) {                \
+      swap (*i, *j, tmp);        \
+      i++;                       \
+      j--;                       \
+    }                            \
+  }                              \
+  DL_ADD_SUFF (dl_qsort, TA) (a, (int)(j - a) + 1);    \
+  DL_ADD_SUFF (dl_qsort, TA) (i, n - (int)(i - a));    \
+}
+
+#define DL_FIND_BODY {                \
+  int l = -1, r = n, c;               \
+  while (l + 1 < r) {                 \
+    c = (l + r) / 2;                  \
+    if (cmp (a[c], val)) {            \
+      l = c;                          \
+    } else {                          \
+      r = c;                          \
+    }                                 \
+  }                                   \
+  if (r == n || !DL_EQ(TA) (a[r], val)) {   \
+    return n;                         \
+  }                                   \
+  return r;                           \
+}
+
+#define DEF_ALGOS                        \
+  DL_QSORT_TITLE  BODY (DL_QSORT_BODY)   \
+  DL_UNIQUE_TITLE  BODY (DL_UNIQUE_BODY) \
+  DL_FIND_TITLE  BODY (DL_FIND_BODY)
+
+DEF_ALGOS
+
+#undef swap
+#undef cmp
+

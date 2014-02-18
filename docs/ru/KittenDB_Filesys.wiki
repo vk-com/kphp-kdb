@@ -1,0 +1,84 @@
+[[filesys-xfs-engine|KittenDB FilesysXFS]]
+
+''KittenDB FileSystem'' --- это движок, реализующий файловую систему на основе стандартной идеологии движков (бинлоги + снимки). Помимо привычного memcached-интерфейса (с операциями вроде get read($filename,$offset,$len)) может также поддерживаться монтирование на отдельный каталог как файловой системы с помощью [[FUSE]]. Может использоваться для хранения большого числа маленьких файлов в одном-двух больших файлах. Например, пользовательские фотографии можно собрать таким образом в относительно небольшое количество кусков гигабайтного размера; или же все php-исходники можно хранить в отдельном экземпляре KittenDB FileSystem. В таком случае (атомарное) обновление исходников на всех серверах превращается в синхронизацию хвоста бинлога, что может быть реализовано средствами KittenDB CopyFast.
+
+===Прототип memcached интерфейса ===
+<code>
+//При открытии файла на чтение нужно передавать имя файла set-ом,
+//так как ключ memcached протокола не может быть больше 1Кb
+$MC_Filesys->set ("path", $path);
+$inode = $MC_Filesys->get ("open"); //в случае успеха возвращает неотрицательный int64
+//Создание файла, аналогично открытию
+$MC_Filesys->set ("path", $path);
+$inode = $MC_Filesys->get ("creat{$mode}"); //$mode - права
+//Другие команды:
+$MC_Filesys->set ("write{$offset},{$inode}", $data);
+$MC_Filesys->get ("read{$offset},{$length},{$inode}");
+$MC_Filesys->set ("mkdir{$mode}", $path);
+$MC_Filesys->set ("rmdir", $path); //удаление пустой директории
+$MC_Filesys->set ("unlink", $path); //удаление файла
+$MC_Filesys->set ("chmod{$mode}, $path);
+$MC_Filesys->set ("chown{$uid},{$gid}", $path);
+</code>
+
+===Монтирование файловой системы ===
+<code>
+./filesys-engine -f "mnt" binlog
+</code>
+===Размонтирование файловой системы ===
+<code>
+fusermount -u mnt
+</code>
+===FUSE options===
+general options:
+    -o opt,[opt...]        mount options
+    -h   --help            print help
+    -V   --version         print version
+
+FUSE options:
+    -d   -o debug          enable debug output (implies -f)
+    -f                     foreground operation
+    -s                     disable multi-threaded operation
+
+    -o allow_other         allow access to other users
+    -o allow_root          allow access to root
+    -o nonempty            allow mounts over non-empty file/dir
+    -o default_permissions enable permission checking by kernel
+    -o fsname=NAME         set filesystem name
+    -o subtype=NAME        set filesystem type
+    -o large_read          issue large read requests (2.4 only)
+    -o max_read=N          set maximum size of read requests
+
+    -o hard_remove         immediate removal (don't hide files)
+    -o use_ino             let filesystem set inode numbers
+    -o readdir_ino         try to fill in d_ino in readdir
+    -o direct_io           use direct I/O
+    -o kernel_cache        cache files in kernel
+    -o [no]auto_cache      enable caching based on modification times (off)
+    -o umask=M             set file permissions (octal)
+    -o uid=N               set file owner
+    -o gid=N               set file group
+    -o entry_timeout=T     cache timeout for names (1.0s)
+    -o negative_timeout=T  cache timeout for deleted names (0.0s)
+    -o attr_timeout=T      cache timeout for attributes (1.0s)
+    -o ac_attr_timeout=T   auto cache timeout for attributes (attr_timeout)
+    -o intr                allow requests to be interrupted
+    -o intr_signal=NUM     signal to send on interrupt (10)
+    -o modules=M1[:M2...]  names of modules to push onto filesystem stack
+
+    -o max_write=N         set maximum size of write requests
+    -o max_readahead=N     set maximum readahead
+    -o async_read          perform reads asynchronously (default)
+    -o sync_read           perform reads synchronously
+    -o atomic_o_trunc      enable atomic open+truncate support
+===Характеристики написанной файловой системы===
+* Вся структура каталогов хранится в оперативной памяти.
+* Все операции write произошедшие после последней индексации хранятся в оперативной памяти в декартовых деревьях не пересекающихся полуинтервалов.
+* Для загрузки тел файлов из индекса используется алгоритм LRU. Файл загружается в память целиком.
+* Тела файлов не разбиваются на блоки.
+
+===Links ===
+* [http://www.kernel.org/doc/Documentation/filesystems/fuse.txt]
+* [http://en.wikipedia.org/wiki/B%2B_tree]
+===TODO===
+-R режим: файлы добавляются в память, но новые logevent не пишутся

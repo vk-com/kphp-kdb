@@ -1,0 +1,637 @@
+<?php
+/*
+    This file is part of VK/KittenDB-Engine.
+
+    VK/KittenDB-Engine is free software: you can redistribute it and/or modify
+    it under the terms of the GNU General Public License as published by
+    the Free Software Foundation, either version 2 of the License, or
+    (at your option) any later version.
+
+    VK/KittenDB-Engine is distributed in the hope that it will be useful,
+    but WITHOUT ANY WARRANTY; without even the implied warranty of
+    MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+    GNU General Public License for more details.
+
+    You should have received a copy of the GNU General Public License
+    along with VK/KittenDB-Engine.  If not, see <http://www.gnu.org/licenses/>.
+
+    This program is released under the GPL with the additional exemption 
+    that compiling, linking, and/or using OpenSSL is allowed.
+    You are free to remove this exemption from derived works.
+
+    Copyright 2012-2013 Vkontakte Ltd
+              2012-2013 Arseny Smirnov
+              2012-2013 Aliaksei Levin
+*/
+
+if (0) {
+  unserialize ("");
+  is_bool ("");
+  is_array ("");
+  is_string ("");
+  is_integer ("");
+  is_float ("");
+}
+
+define (PHP_INT_MAX, 2147483647);
+define (PHP_INT_SIZE, 4);
+define (PHP_EOL, "\n");
+
+define (PHP_SAPI, "Kitten PHP");
+#define_raw ('INT_MIN', -2147483648);
+#define_raw ('INT_MAX', 2147483647);
+
+$_SERVER ::: var;
+$_GET ::: var;
+$_POST ::: var;
+$_FILES ::: var;
+$_COOKIE ::: var;
+$_REQUEST ::: var;
+$_ENV ::: var;
+
+$DB_Proxy ::: DB;
+
+function ob_clean() ::: void;
+function ob_end_clean() ::: bool;
+function ob_get_clean() ::: OrFalse <string>;
+function ob_get_contents() ::: string;
+function ob_start ($x ::: string = "") ::: void;
+function header ($str ::: string, $replace ::: bool = true, $http_response_code ::: int = 0) ::: void;
+function setcookie ($name ::: string, $value ::: string, $expire ::: int = 0, $path ::: string = '', $domain ::: string = '', $secure ::: bool = false, $http_only ::: bool = false) ::: void;
+function setrawcookie ($name ::: string, $value ::: string, $expire ::: int = 0, $path ::: string = '', $domain ::: string = '', $secure ::: bool = false, $http_only ::: bool = false) ::: void;
+function register_shutdown_function (callback()) ::: void;//TODO var ::: callback()
+
+function func_get_args() ::: array <var>;
+function func_get_arg($i ::: int) ::: var;
+function func_num_args() ::: int;
+
+define_raw ('E_ERROR', 1);
+define_raw ('E_WARNING', 2);
+define_raw ('E_PARSE', 4);
+define_raw ('E_NOTICE', 8);
+define_raw ('E_CORE_ERROR', 16);
+define_raw ('E_CORE_WARNING', 32);
+define_raw ('E_COMPILE_ERROR', 64);
+define_raw ('E_COMPILE_WARNING', 128);
+define_raw ('E_USER_ERROR', 256);
+define_raw ('E_USER_WARNING', 512);
+define_raw ('E_USER_NOTICE', 1024);
+define_raw ('E_STRICT', 2048);
+define_raw ('E_RECOVERABLE_ERROR', 4096);
+define_raw ('E_DEPRECATED', 8192);
+define_raw ('E_USER_DEPRECATED', 16384);
+define_raw ('E_ALL', 32767);
+
+function error_get_last() ::: var;
+function error_reporting ($e ::: int = TODO) ::: int;
+function warning ($message ::: string) ::: void;
+function ini_get ($s ::: string) ::: OrFalse <string>;
+function ini_set ($s ::: string, $v ::: string) ::: bool;
+function memory_get_usage ($real_usage ::: bool = false) ::: int;
+function memory_get_peak_usage ($real_usage ::: bool = false) ::: int;
+function memory_get_total_usage() ::: int;
+function memory_get_static_usage() ::: int;
+
+function getKeyByPos ($a ::: array, $n ::: int) ::: var;
+function getValueByPos ($a ::: array, $n ::: int) ::: ^1[];
+function create_vector ($n ::: int, $x ::: Any) ::: array <^2>;//TODO version with 1 parameter
+
+function implode ($s ::: string, $v ::: array) ::: string;
+function explode ($delimiter ::: string, $str ::: string, $limit ::: int = INT_MAX) ::: array <string>;
+
+function array_chunk ($a ::: array, $chunk_size ::: int, $preserve_keys ::: bool = false) ::: array <^1>;
+
+function array_splice (&$a ::: array, $offset ::: int, $length ::: int, $replacement ::: array = array()) ::: ^1;
+function array_merge auto ($a1 ::: array, $a2  ::: array = array(), $a3  ::: array = array(),
+            $a4 ::: array = array(), $a5  ::: array = array(), $a6  ::: array = array(),
+            $a7 ::: array = array(), $a8  ::: array = array(), $a9  ::: array = array(),
+           $a10 ::: array = array(), $a11 ::: array = array(), $a12 ::: array = array())
+                ::: lca <^1, ^2, ^3, ^4, ^5, ^6, ^7, ^8, ^9, ^10, ^11, ^12>;
+function array_intersect_key ($a1 ::: array, $a2 ::: array) ::: ^1;
+function array_intersect ($a1 ::: array, $a2 ::: array) ::: ^1;
+function array_diff_key ($a1 ::: array, $a2 ::: array) ::: ^1;
+function array_diff ($a1 ::: array, $a2 ::: array, $a3 ::: array = TODO) ::: ^1;
+function array_reverse ($a ::: array, $preserve_keys ::: bool = false) ::: ^1;
+function array_shift (&$a ::: array) ::: ^1[];
+function array_unshift (&$a ::: array, $val ::: Any) ::: int;
+function array_key_exists ($v ::: Any, $a ::: array) ::: bool;
+function array_search ($val ::: Any, $a ::: array) ::: var;
+function array_rand ($a ::: array, $num ::: int = 1) ::: var;
+function array_keys ($a ::: array) ::: array <var>;
+function array_values ($a ::: array) ::: ^1;
+function array_unique ($a ::: array) ::: ^1;
+function array_count_values ($a ::: array) ::: array <int>;
+function array_flip ($a ::: array) ::: array <var>;
+function in_array ($value ::: Any, $a ::: array, $strict ::: bool = false) ::: bool;
+function array_fill ($start_index ::: int, $num ::: int, $value ::: Any) ::: array <^3>;
+function array_fill_keys ($a ::: array, $value ::: Any) ::: array <^2>;
+function array_combine ($keys ::: array, $values ::: array) ::: ^2;
+function range ($from, $to) ::: array <var>;
+function array_push (&$a ::: array, $val2 ::: Any, $val3 ::: Any = TODO, $val4 ::: Any = TODO, $val5 ::: Any = TODO, $val6 ::: Any = TODO) ::: int;
+function array_pop (&$a ::: array) ::: ^1[];
+function array_sum ($a ::: array) ::: float;//TODO 
+function array_slice ($a ::: array, $offset ::: int, $length ::: int = INT_MAX, $preserve_keys ::: bool = false) ::: ^1;
+function array_filter ($a ::: array, callback ($x) = TODO) ::: ^1;
+function array_map (callback ($x), $a ::: array) ::: array <var>;
+
+function empty ($val ::: Any) ::: bool;
+function count ($val ::: Any) ::: int;
+function sizeof ($val ::: Any) ::: int;
+function gettype ($v ::: Any) ::: string;
+function is_scalar ($v ::: Any) ::: bool;
+function is_numeric ($v ::: Any) ::: bool;
+function is_null ($v ::: Any) ::: bool;
+function is_bool ($v ::: Any) ::: bool;
+function is_int ($v ::: Any) ::: bool;
+function is_integer ($v ::: Any) ::: bool;
+function is_long ($v ::: Any) ::: bool;
+function is_float ($v ::: Any) ::: bool;
+function is_double ($v ::: Any) ::: bool;
+function is_real ($v ::: Any) ::: bool;
+function is_string ($v ::: Any) ::: bool;
+function is_array ($v ::: Any) ::: bool;
+function is_object ($v ::: Any) ::: bool;
+function print_r ($v ::: Any, $buffered ::: bool = false) ::: string;
+
+define_raw ('DATE_ATOM', "Y-m-d\TH:i:sP");
+define_raw ('DATE_COOKIE', "l, d-M-y H:i:s T");
+define_raw ('DATE_ISO8601', "Y-m-d\TH:i:sO");
+define_raw ('DATE_RFC822', "D, d M y H:i:s O");
+define_raw ('DATE_RFC850', "l, d-M-y H:i:s T");
+define_raw ('DATE_RFC1036', "D, d M y H:i:s O");
+define_raw ('DATE_RFC1123', "D, d M Y H:i:s O");
+define_raw ('DATE_RFC2822', "D, d M Y H:i:s O");
+define_raw ('DATE_RFC3339', "Y-m-d\TH:i:sP");
+define_raw ('DATE_RSS', "D, d M Y H:i:s O");
+define_raw ('DATE_W3C', "Y-m-d\TH:i:sP");
+
+function checkdate ($month ::: int, $day ::: int, $year ::: int) ::: bool;
+function date ($format ::: string, $timestamp ::: int = INT_MIN) ::: string;
+function date_default_timezone_set ($s ::: string) ::: bool;
+function date_default_timezone_get() ::: string;
+function getdate ($timestamp ::: int = INT_MIN) ::: array <var>;
+function gmdate ($format ::: string, $timestamp ::: int = INT_MIN) ::: string;
+function gmmktime ($h ::: int = INT_MIN, $m ::: int = INT_MIN, $s ::: int = INT_MIN, $month ::: int = INT_MIN, $day ::: int = INT_MIN, $year ::: int = INT_MIN) ::: int;
+function localtime ($timestamp ::: int = INT_MIN, $is_associative ::: bool = false);
+function microtime ($get_as_float ::: bool = false) ::: var;//TODO
+function mktime ($h ::: int = INT_MIN, $m ::: int = INT_MIN, $s ::: int = INT_MIN, $month ::: int = INT_MIN, $day ::: int = INT_MIN, $year ::: int = INT_MIN) ::: int;
+function strftime ($format ::: string, $timestamp ::: int = INT_MIN) ::: string;
+function strtotime ($time ::: string, $timestamp ::: int = INT_MIN) ::: OrFalse <int>;
+function time() ::: int;
+
+function debug_backtrace() ::: array <array <string> >;
+function posix_getpid() ::: int;
+function gethostbynamel ($name ::: string) ::: OrFalse <array <string> >;
+function inet_pton ($address ::: string) ::: OrFalse <string>;
+
+function unpack ($pattern ::: string, $data ::: string) ::: array <var>;
+
+function serialize ($v ::: Any) ::: string;
+function unserialize ($v ::: string) ::: CONST var;
+function json_encode ($v ::: Any) ::: string;
+function json_decode ($v ::: string, $assoc ::: bool = false) ::: var;
+
+define_raw ('PREG_PATTERN_ORDER', 1);
+define_raw ('PREG_SET_ORDER', 2);
+define_raw ('PREG_OFFSET_CAPTURE', 4);
+define_raw ('PREG_SPLIT_NO_EMPTY', 8);
+define_raw ('PREG_SPLIT_DELIM_CAPTURE', 16);
+define_raw ('PREG_SPLIT_OFFSET_CAPTURE', 32);
+
+function preg_match ($regex ::: regexp, $subject ::: string, &$matches ::: var = TODO, $flags ::: int = 0) ::: OrFalse <int>;//TODO
+function preg_match_all ($regex ::: regexp, $subject ::: string, &$matches ::: var = TODO, $flags ::: int = 0) ::: OrFalse <int>;//TODO
+function preg_replace ($regex ::: regexp, $replace_val, $subject, $limit ::: int = -1, &$replace_count ::: int = TODO) ::: var;
+function preg_replace_callback ($regex ::: regexp, callback($x), $subject, $limit ::: int = -1, &$replace_count ::: int = TODO) ::: var;
+function preg_quote ($str ::: string, $delimiter ::: string = '') ::: string;
+function preg_last_error() ::: int;
+function preg_split ($pattern ::: regexp, $subject ::: string, $limit ::: int = -1, $flags ::: int = 0) ::: OrFalse < array <var> >;
+
+define_raw ('SORT_REGULAR', 0);
+define_raw ('SORT_NUMERIC', 1);
+define_raw ('SORT_STRING', 2);
+
+function shuffle (&$a ::: array) ::: void;
+function sort (&$a ::: array, $flag ::: int = SORT_REGULAR) ::: void;
+function rsort (&$a ::: array, $flag ::: int = SORT_REGULAR) ::: void;
+function usort (&$a ::: array, callback($x, $y)) ::: void;
+function asort (&$a ::: array, $flag ::: int = SORT_REGULAR) ::: void;
+function arsort (&$a ::: array, $flag ::: int = SORT_REGULAR) ::: void;
+function uasort (&$a ::: array, callback($x, $y)) ::: void;
+function ksort (&$a ::: array, $flag ::: int = SORT_REGULAR) ::: void;
+function krsort (&$a ::: array, $flag ::: int = SORT_REGULAR) ::: void;
+function uksort (&$a ::: array, callback($x, $y)) ::: void;
+
+function srand ($seed ::: int = INT_MIN) ::: void;
+function rand ($l ::: int = TODO_OVERLOAD, $r ::: int = TODO_OVERLOAD) ::: int;
+function getrandmax() ::: int;
+function mt_srand ($seed ::: int = INT_MIN) ::: void;
+function mt_rand ($l ::: int = TODO_OVERLOAD, $r ::: int = TODO_OVERLOAD) ::: int;
+function mt_getrandmax() ::: int;
+
+function hash_algos () ::: array <string>;
+function hash ($algo ::: string, $data ::: string, $raw_output ::: bool = false) ::: string;
+function hash_hmac ($algo ::: string, $data ::: string, $key ::: string, $raw_output ::: bool = false) ::: string;
+function sha1 ($s ::: string, $raw_output ::: bool = false) ::: string;
+function md5 ($s ::: string, $raw_output ::: bool = false) ::: string;
+function md5_file ($s ::: string, $raw_output ::: bool = false) ::: string;
+function crc32 ($s ::: string) ::: int;
+function crc32_file ($s ::: string) ::: int;
+
+function openssl_public_encrypt ($data ::: string, &$result ::: var, $key ::: string) ::: bool;
+function openssl_private_decrypt ($data ::: string, &$result ::: var, $key ::: string) ::: bool;
+function openssl_pkey_get_private ($key ::: string, $passphrase ::: string = '') ::: OrFalse <string>;
+
+function gzencode ($str ::: string, $level ::: int = -1) ::: string;
+function gzdecode ($str ::: string) ::: string;
+function gzcompress ($str ::: string, $level ::: int = -1) ::: string;
+function gzuncompress ($str ::: string) ::: string;
+function base64_decode ($str ::: string) ::: string;
+function base64_encode ($str ::: string) ::: string;
+function http_build_query ($str ::: array) ::: string;
+function rawurldecode ($str ::: string) ::: string;
+function rawurlencode ($str ::: string) ::: string;
+function urldecode ($str ::: string) ::: string;
+function urlencode ($str ::: string) ::: string;
+
+define (PHP_URL_SCHEME, 0);
+define (PHP_URL_HOST, 1);
+define (PHP_URL_PORT, 2);
+define (PHP_URL_USER, 3);
+define (PHP_URL_PASS, 4);
+define (PHP_URL_PATH, 5);
+define (PHP_URL_QUERY, 6);
+define (PHP_URL_FRAGMENT, 7);
+
+function parse_url ($str ::: string, $component ::: int = -1) ::: var;
+
+define_raw ('M_PI', 3.1415926535897932384626433832795);
+
+function abs ($v);//TODO
+function acos ($v ::: float) ::: CONST float;
+function atan ($v ::: float) ::: CONST float;
+function atan2 ($y ::: float, $x ::: float) ::: CONST float;
+function base_convert ($number ::: string, $frombase ::: int, $tobase ::: int) ::: CONST string;
+function ceil ($v ::: float) ::: CONST float;
+function cos ($v ::: float) ::: CONST float;
+function deg2rad ($v ::: float) ::: CONST float;
+function exp ($v ::: float) ::: CONST float;
+function floor ($v ::: float) ::: CONST float;
+function log ($v ::: float, $base ::: float = 2.7182818284590452353602874713527) ::: CONST float;
+function fmod ($x ::: float, $y ::: float) ::: CONST float;
+function pi() ::: CONST float;
+function pow ($num, $deg);//TODO
+function round ($v ::: float, $precision ::: int = 0) ::: CONST float;
+function sin ($v ::: float) ::: CONST float;
+function sqrt ($v ::: float) ::: CONST float;
+function tan ($v ::: float) ::: CONST float;
+
+
+define_raw ('ENT_HTML401', 0);
+define_raw ('ENT_COMPAT', 0);
+define_raw ('ENT_QUOTES', 1);
+define_raw ('ENT_NOQUOTES', 2);
+
+function addcslashes ($str ::: string, $what ::: string) ::: string;
+function addslashes ($str ::: string) ::: string;
+function bin2hex ($str ::: string) ::: string;
+function chr ($v ::: int) ::: string;
+function count_chars ($str ::: string, $mode ::: int = 0) ::: var;
+function decbin ($number ::: int) ::: string;
+function dechex ($number ::: int) ::: string;
+function hex2bin ($str ::: string) ::: string;
+function hexdec ($number ::: string) ::: int;
+function htmlentities ($str ::: string) ::: string;
+function html_entity_decode ($str ::: string, $flags ::: int = ENT_COMPAT, $encoding ::: string = '1251') ::: string;
+function htmlspecialchars ($str ::: string, $flags ::: int = ENT_COMPAT) ::: string;
+function htmlspecialchars_decode ($str ::: string, $flags ::: int = ENT_COMPAT) ::: string;
+function levenshtein ($str1 ::: string, $str2 ::: string) ::: int;
+function mysql_escape_string ($str ::: string) ::: string;
+function nl2br ($str ::: string, $is_xhtml = true) ::: string;
+function number_format ($number ::: float, $decimals ::: int = 0, $dec_point = '.', $thousands_sep = ',') ::: string;
+function parse_str ($str ::: string, &$arr ::: var) ::: void; // TODO: why no ::: array? // TODO because it is an output parameter, input can have any type and it's ok.
+function ord ($c ::: string) ::: int;
+function strcasecmp ($str1 ::: string, $str2 ::: string) ::: int;
+function strcmp ($str1 ::: string, $str2 ::: string) ::: int;
+function stripslashes ($str ::: string) ::: string;
+function strncmp ($str1 ::: string, $str2 ::: string, $len ::: int) ::: int;
+function wordwrap ($str ::: string, $width ::: int = 75, $break ::: string = '\n', $cut ::: bool = false) ::: string;
+
+
+function ip2long ($ip ::: string) ::: OrFalse <int>;
+function ip2ulong ($ip ::: string) ::: OrFalse <string>;
+function long2ip ($ip) ::: string;
+
+function get_magic_quotes_gpc() ::: bool;
+function php_sapi_name() ::: string;
+
+define_raw ('STR_PAD_LEFT', 0);
+define_raw ('STR_PAD_RIGHT', 1);
+define_raw ('STR_PAD_BOTH', 2);
+
+function str_pad ($input ::: string, $len ::: int, $pad_str ::: string = " ", $pad_type ::: int = STR_PAD_RIGHT) ::: string;
+function str_repeat ($s ::: string, $multiplier ::: int) ::: string;
+
+function lcfirst ($str ::: string) ::: string;
+function ucfirst ($str ::: string) ::: string;
+function lcwords ($str ::: string) ::: string;
+function ucwords ($str ::: string) ::: string;
+
+function strtr ($subject ::: string, $replace_pairs, $third = TODO) ::: string;//TODO
+//function strtr ($subject, $from, $to);
+function str_replace ($search, $replace, $subject, &$count ::: int = TODO) ::: var;//TODO
+function str_split ($str ::: string, $split_length ::: int = 1) ::: array <string>;
+function strlen ($str ::: string) ::: int;
+function strpbrk ($haystack ::: string, $char_list ::: string) ::: OrFalse <string>;
+function strpos ($haystack ::: string, $needle, $offset ::: int = 0) ::: OrFalse <int>;
+function stripos ($haystack ::: string, $needle, $offset ::: int = 0) ::: OrFalse <int>;
+function strrpos ($haystack ::: string, $needle, $offset ::: int = 0) ::: OrFalse <int>;
+function strripos ($haystack ::: string, $needle, $offset ::: int = 0) ::: OrFalse <int>;
+function strstr ($haystack ::: string, $needle, $before_needle ::: bool = false) ::: OrFalse <string>;
+function stristr ($haystack ::: string, $needle, $before_needle ::: bool = false) ::: OrFalse <string>;
+function strrev ($str ::: string) ::: string;
+function strtolower ($str ::: string) ::: string;
+function strtoupper ($str ::: string) ::: string;
+function substr ($str ::: string, $start ::: int, $length ::: int = INT_MAX) ::: string;
+function substr_count ($haystack ::: string, $needle ::: string, $offset ::: int = 0, $length ::: int = INT_MAX) ::: int;
+
+function trim ($s ::: string, $what ::: string = " \n\r\t\v\0") ::: string;
+function ltrim ($s ::: string, $what ::: string = " \n\r\t\v\0") ::: string;
+function rtrim ($s ::: string, $what ::: string = " \n\r\t\v\0") ::: string;
+
+define_raw ('LC_ALL', 6);
+define_raw ('LC_COLLATE', 3);
+define_raw ('LC_CTYPE', 0);
+define_raw ('LC_MONETARY', 4);
+define_raw ('LC_NUMERIC', 1);
+define_raw ('LC_TIME', 2);
+define_raw ('LC_MESSAGES', 5);
+
+function setlocale ($category ::: int, $locale ::: string) ::: OrFalse <string>;
+
+function iconv ($input_encoding ::: string, $output_encoding ::: string, $input_str ::: string) ::: OrFalse <string>;
+
+function mb_check_encoding ($str ::: string, $encoding ::: string = "1251") ::: bool;
+function mb_strlen ($str ::: string, $encoding ::: string = "1251") ::: int;
+function mb_strpos ($haystack ::: string, $needle ::: string, $offset ::: int = 0, $encoding ::: string = "1251") ::: OrFalse <int>;
+function mb_stripos ($haystack ::: string, $needle ::: string, $offset ::: int = 0, $encoding ::: string = "1251") ::: OrFalse <int>;
+function mb_strtolower ($str ::: string, $encoding ::: string = "1251") ::: string;
+function mb_strtoupper ($str ::: string, $encoding ::: string = "1251") ::: string;
+function mb_substr ($str ::: string, $start ::: int, $length ::: int = INT_MAX, $encoding ::: string = "1251") ::: string;
+
+define_raw ('PHP_ROUND_HALF_UP', 123423141);
+define_raw ('PHP_ROUND_HALF_DOWN', 123423144);
+define_raw ('PHP_ROUND_HALF_EVEN', 123423145);
+define_raw ('PHP_ROUND_HALF_ODD', 123423146);
+
+function bcscale ($scale ::: int) ::: void;
+function bcdiv ($lhs ::: string, $rhs ::: string, $scale ::: int = INT_MIN) ::: string;
+function bcmod ($lhs ::: string, $rhs ::: string) ::: string;
+function bcpow ($lhs ::: string, $rhs ::: string) ::: string;
+function bcadd ($lhs ::: string, $rhs ::: string, $scale ::: int = INT_MIN) ::: string;
+function bcsub ($lhs ::: string, $rhs ::: string, $scale ::: int = INT_MIN) ::: string;
+function bcmul ($lhs ::: string, $rhs ::: string, $scale ::: int = INT_MIN) ::: string;
+function bccomp ($lhs ::: string, $rhs ::: string, $scale ::: int = INT_MIN) ::: int;
+
+function mysql_errno() ::: int;
+function mysql_error() ::: string;
+
+function function_exists ($func_name ::: Any) ::: bool;
+
+function basename ($name ::: string, $suffix ::: string = '') ::: string;
+function chmod ($name ::: string, $mode ::: int) ::: bool;
+function clearstatcache() ::: void;
+function copy ($from ::: string, $to ::: string) ::: bool;
+function dirname ($name ::: string) ::: string;
+function file ($name ::: string) ::: OrFalse <array <string> >;
+function file_get_contents ($name ::: string) ::: OrFalse <string>;
+function file_exists ($name ::: string) ::: bool;
+function filesize ($name ::: string) ::: OrFalse <int>;
+function is_dir ($name ::: string) ::: bool;
+function is_file ($name ::: string) ::: bool;
+function is_readable ($name ::: string) ::: bool;
+function is_writeable ($name ::: string) ::: bool;
+function mkdir ($name ::: string, $mode ::: int = 0777) ::: bool;
+function php_uname ($mode ::: string = "a") ::: string;
+function rename ($oldname ::: string, $newname ::: string) ::: bool;
+function realpath ($path ::: string) ::: OrFalse <string>;
+function tempnam ($dir ::: string, $prefix ::: string) ::: OrFalse <string>;
+function unlink ($name ::: string) ::: bool;
+function sleep ($seconds ::: int) ::: void;
+function usleep ($micro_seconds ::: int) ::: void;
+
+/** Memcached **/
+
+define_raw ('MEMCACHE_COMPRESSED', 2);
+
+function new_Memcache() ::: MC;
+function new_RpcMemcache() ::: MC;
+
+function memcached_get ($MC ::: MC, $key) throws ::: var;
+function memcached_delete ($MC ::: MC, $key ::: string) throws ::: bool;
+
+function memcached_add ($MC ::: MC, $key ::: string, $value ::: Any, $flags ::: int = 0, $expire ::: int = 0) throws ::: bool;
+function memcached_set ($MC ::: MC, $key ::: string, $value ::: Any, $flags ::: int = 0, $expire ::: int = 0) throws ::: bool;
+function memcached_replace ($MC ::: MC, $key ::: string, $value ::: Any, $flags ::: int = 0, $expire ::: int = 0) throws ::: bool;
+function memcached_decrement ($MC ::: MC, $key ::: string, $v ::: Any = 1) throws ::: var;
+function memcached_increment ($MC ::: MC, $key ::: string, $v ::: Any = 1) throws ::: var;
+
+function memcached_addServer ($MC ::: MC, $host ::: string, $port ::: int = 11211, $persistent ::: bool = true, $weight ::: int = 1, $timeout ::: int = 1, $retry_interval ::: int = 15, $status ::: bool = true, $failure_callback ::: var = null, $timeoutms ::: int = -1) ::: bool;
+function memcached_connect ($MC ::: MC, $host ::: string, $port ::: int = 11211) ::: bool;
+function memcached_pconnect ($MC ::: MC, $host ::: string, $port ::: int = 11211) ::: bool;
+function memcached_rpc_connect ($MC ::: MC, $host ::: string, $port ::: int, $default_actor_id ::: Any = 0, $timeout ::: float = 0.3, $connect_timeout ::: float = 0.3, $reconnect_timeout ::: float = 17.0) ::: bool;
+function mcGetStats ($MC ::: MC) ::: array <int>;
+function mcGetClusterSize ($MC ::: MC) ::: int;
+
+/** SQL **/
+function dbIsDown ($check_failed ::: bool = true) throws ::: bool;
+function dbUseMaster ($table_name ::: string) throws ::: bool;
+function dbIsTableDown ($table_name ::: string) throws ::: bool;
+function dbUseMasterAll ($tables_names ::: array) throws ::: bool;
+function dbIsTableDownAll ($tables_names ::: array) throws ::: bool;
+function dbSetTimeout ($new_timeout ::: float) ::: void;
+function dbGetReturnDie() ::: bool;
+function dbSetReturnDie ($return_die ::: bool = true) ::: void;
+function dbFailed() ::: bool;
+function dbQuery ($the_query ::: string) throws ::: var;
+function dbQueryTry ($the_query ::: string, $tries_count ::: int = 3) throws ::: var;
+function dbFetchRow ($query_id ::: var = -1) throws ::: OrFalse <array <var> >;
+function dbAffectedRows() ::: int;
+function dbNumRows() ::: int;
+function dbSaveFailed() ::: void;
+function dbHasFailed() ::: bool;
+function dbInsertedId() ::: int;
+function dbInsertString ($data ::: array, $no_escape ::: bool = false) ::: array <string>;
+function dbUpdateString ($data ::: array) ::: string;
+
+function setDbNoDie ($no_die ::: bool = true) ::: void;
+function dbDeclare () ::: void;
+function new_db_decl () ::: DB;
+
+/** exceptions **/
+function new_Exception ($file ::: string, $line ::: int, $err ::: string = '', $code ::: int = 0) ::: Exception;
+function exception_getMessage ($e ::: Exception) ::: string;
+function exception_getCode ($e ::: Exception) ::: int;
+function exception_getFile ($e ::: Exception) ::: string;
+function exception_getLine ($e ::: Exception) ::: int;
+function exception_getTrace ($e ::: Exception) ::: array < array < string > >;
+function exception_getTraceAsString ($e ::: Exception) ::: string;
+function err ($file ::: string, $line ::: int, $code ::: string, $desc ::: string = '') ::: Exception;
+
+/** rpc fetch **/
+function fetch_int ($file ::: string, $line ::: int) throws ::: int;
+function fetch_UInt ($file ::: string, $line ::: int) throws ::: UInt;
+function fetch_Long ($file ::: string, $line ::: int) throws ::: Long;
+function fetch_ULong ($file ::: string, $line ::: int) throws ::: ULong;
+function fetch_unsigned_int ($file ::: string, $line ::: int) throws ::: var;
+function fetch_long ($file ::: string, $line ::: int) throws ::: var;
+function fetch_unsigned_long ($file ::: string, $line ::: int) throws ::: var;
+function fetch_unsigned_int_hex ($file ::: string, $line ::: int) throws ::: string;
+function fetch_unsigned_long_hex ($file ::: string, $line ::: int) throws ::: string;
+function fetch_unsigned_int_str ($file ::: string, $line ::: int) throws ::: string;
+function fetch_unsigned_long_str ($file ::: string, $line ::: int) throws ::: string;
+function fetch_double ($file ::: string, $line ::: int) throws ::: float;
+function fetch_string ($file ::: string, $line ::: int) throws ::: string;
+function fetch_eof ($file ::: string, $line ::: int) ::: bool;
+function fetch_end ($file ::: string, $line ::: int) throws ::: bool;
+function rpc_parse ($data) ::: void;
+
+/** rpc store **/
+function new_rpc_connection ($str ::: string, $port ::: int, $default_actor_id ::: Any = 0, $timeout ::: float = 0.3, $connect_timeout ::: float = 0.3, $reconnect_timeout ::: float = 17.0) ::: RPC;
+function store_gzip_pack_threshold ($pack_threshold_bytes ::: int) ::: void;
+function store_start_gzip_pack() ::: void;
+function store_finish_gzip_pack ($pack_threshold_bytes ::: int) ::: void;
+function rpc_clean() ::: bool;
+function store_header ($actor_id ::: Any, $flags ::: int = 0) ::: bool;
+function store_error ($error_code ::: int, $error_text ::: string) ::: bool;
+function store_int ($v ::: int) ::: bool;
+function store_UInt ($v ::: UInt) ::: bool;
+function store_Long ($v ::: Long) ::: bool;
+function store_ULong ($v ::: ULong) ::: bool;
+function store_unsigned_int ($v ::: Any) ::: bool;
+function store_long ($v ::: Any) ::: bool;
+function store_unsigned_long ($v ::: Any) ::: bool;
+function store_unsigned_int_hex ($v ::: string) ::: bool;
+function store_unsigned_long_hex ($v ::: string) ::: bool;
+function store_double ($v ::: float) ::: bool;
+function store_string ($v ::: string) ::: bool;
+function store_finish() ::: bool;
+function rpc_send ($rpc_conn ::: RPC, $timeout ::: float = -1.0) ::: var;
+function rpc_get ($request_id ::: Any) ::: OrFalse <string>;
+function rpc_get_and_parse ($request_id ::: Any) ::: bool;
+function rpc_send_session_msg ($auth_key_id ::: Any, $session_id ::: Any) ::: bool;
+function rpc_get_any_qid() ::: var;
+function rpc_queue_create ($request_ids ::: array) ::: var;
+function rpc_queue_empty ($queue_id ::: Any) ::: bool;
+function rpc_queue_next ($queue_id ::: Any) ::: var;
+function rpc_mc_get ($rpc_conn ::: RPC, $key ::: string, $timeout ::: float = -1.0) throws ::: var;
+function rpc_mc_multiget ($rpc_conn ::: RPC, $key ::: array, $timeout ::: float = -1.0) throws ::: OrFalse <array <var> >;
+function rpc_mc_delete ($rpc_conn ::: RPC, $key ::: string, $timeout ::: float = -1.0) throws ::: bool;
+function rpc_mc_add ($rpc_conn ::: RPC, $key ::: string, $value, $flags ::: int = 0, $expire ::: int = 0, $timeout ::: float = -1.0) throws ::: bool;
+function rpc_mc_set ($rpc_conn ::: RPC, $key ::: string, $value, $flags ::: int = 0, $expire ::: int = 0, $timeout ::: float = -1.0) throws ::: bool;
+function rpc_mc_replace ($rpc_conn ::: RPC, $key ::: string, $value, $flags ::: int = 0, $expire ::: int = 0, $timeout ::: float = -1.0) throws ::: bool;
+function rpc_mc_decrement ($rpc_conn ::: RPC, $key ::: string, $v ::: Any = 1, $timeout ::: float = -1.0) throws ::: var;
+function rpc_mc_increment ($rpc_conn ::: RPC, $key ::: string, $v ::: Any = 1, $timeout ::: float = -1.0) throws ::: var;
+function rpc_tl_query_one ($rpc_conn ::: RPC, $arr ::: Any, $timeout ::: float = -1.0) ::: var;
+function rpc_tl_query ($rpc_conn ::: RPC, $arr ::: array, $timeout ::: float = -1.0) ::: array <var>;
+function rpc_tl_query_result_one ($query_id ::: Any) ::: array <var>;
+function rpc_tl_query_result ($query_ids ::: array) ::: array <array <var> >;
+
+/** conversions **/
+function boolval ($v ::: Any) ::: bool;
+function intval ($v ::: Any) ::: int;
+function floatval ($v ::: Any) ::: float;
+function strval ($v ::: Any) ::: string;
+function uintval ($v ::: Any) ::: UInt;
+function longval ($v ::: Any) ::: Long;
+function ulongval ($v ::: Any) ::: ULong;
+function arrayval ($v ::: array) ::: ^1;
+#function objectval ($v ::: Any) ::: object;
+
+
+/** files **/
+define (STDOUT, '::STDOUT::');
+define (STDERR, '::STDERR::');
+
+define (SEEK_SET, 0);
+define (SEEK_END, 1);
+define (SEEK_CUR, 2);
+
+function fopen ($filename ::: string, $mode ::: string);
+function fwrite ($file, $text ::: string) ::: OrFalse <int>;
+function fseek ($file, $offset ::: int, $whence ::: int = SEEK_SET) ::: int;
+function rewind ($file) ::: bool;
+function ftell ($file) ::: OrFalse <int>;
+function fread ($file, $length ::: int) ::: OrFalse <string>;
+function fpassthru ($file) ::: OrFalse <int>;
+function fflush ($file) ::: bool;
+function fclose ($file) ::: bool;
+
+function is_uploaded_file ($filename ::: string) ::: bool;
+function move_uploaded_file ($oldname ::: string, $newname ::: string) ::: bool;
+
+/** Long **/
+function labs ($lhs ::: Long) ::: Long;
+function ldiv ($lhs ::: Long, $rhs ::: Long) ::: Long;
+function lmod ($lhs ::: Long, $rhs ::: Long) ::: Long;
+function lpow ($lhs ::: Long, $rhs ::: int) ::: Long;
+function ladd ($lhs ::: Long, $rhs ::: Long) ::: Long;
+function lsub ($lhs ::: Long, $rhs ::: Long) ::: Long;
+function lmul ($lhs ::: Long, $rhs ::: Long) ::: Long;
+function lshl ($lhs ::: Long, $rhs ::: int) ::: Long;
+function lshr ($lhs ::: Long, $rhs ::: int) ::: Long;
+function lnot ($lhs ::: Long) ::: Long;
+function lor ($lhs ::: Long, $rhs ::: Long) ::: Long;
+function land ($lhs ::: Long, $rhs ::: Long) ::: Long;
+function lxor ($lhs ::: Long, $rhs ::: Long) ::: Long;
+function lcomp ($lhs ::: Long, $rhs ::: Long) ::: int;
+function new_Long ($val ::: Any) ::: Long;
+
+/** ULong **/
+function uldiv ($lhs ::: ULong, $rhs ::: ULong) ::: ULong;
+function ulmod ($lhs ::: ULong, $rhs ::: ULong) ::: ULong;
+function ulpow ($lhs ::: ULong, $rhs ::: int) ::: ULong;
+function uladd ($lhs ::: ULong, $rhs ::: ULong) ::: ULong;
+function ulsub ($lhs ::: ULong, $rhs ::: ULong) ::: ULong;
+function ulmul ($lhs ::: ULong, $rhs ::: ULong) ::: ULong;
+function ulshl ($lhs ::: ULong, $rhs ::: int) ::: ULong;
+function ulshr ($lhs ::: ULong, $rhs ::: int) ::: ULong;
+function ulnot ($lhs ::: ULong) ::: ULong;
+function ulor ($lhs ::: ULong, $rhs ::: ULong) ::: ULong;
+function uland ($lhs ::: ULong, $rhs ::: ULong) ::: ULong;
+function ulxor ($lhs ::: ULong, $rhs ::: ULong) ::: ULong;
+function ulcomp ($lhs ::: ULong, $rhs ::: ULong) ::: int;
+function new_ULong ($val ::: Any) ::: ULong;
+
+/** UInt **/
+function uidiv ($lhs ::: UInt, $rhs ::: UInt) ::: UInt;
+function uimod ($lhs ::: UInt, $rhs ::: UInt) ::: UInt;
+function uipow ($lhs ::: UInt, $rhs ::: int) ::: UInt;
+function uiadd ($lhs ::: UInt, $rhs ::: UInt) ::: UInt;
+function uisub ($lhs ::: UInt, $rhs ::: UInt) ::: UInt;
+function uimul ($lhs ::: UInt, $rhs ::: UInt) ::: UInt;
+function uishl ($lhs ::: UInt, $rhs ::: int) ::: UInt;
+function uishr ($lhs ::: UInt, $rhs ::: int) ::: UInt;
+function uinot ($lhs ::: UInt) ::: UInt;
+function uior ($lhs ::: UInt, $rhs ::: UInt) ::: UInt;
+function uiand ($lhs ::: UInt, $rhs ::: UInt) ::: UInt;
+function uixor ($lhs ::: UInt, $rhs ::: UInt) ::: UInt;
+function uicomp ($lhs ::: UInt, $rhs ::: UInt) ::: int;
+function new_UInt ($val ::: Any) ::: UInt;
+
+
+define (UPLOAD_ERR_OK, 0);
+define (UPLOAD_ERR_INI_SIZE, 1);
+define (UPLOAD_ERR_FORM_SIZE, 2);
+define (UPLOAD_ERR_PARTIAL, 3);
+define (UPLOAD_ERR_NO_FILE, 4);
+define (UPLOAD_ERR_NO_TMP_DIR, 6);
+define (UPLOAD_ERR_CANT_WRITE, 7);
+define (UPLOAD_ERR_EXTENSION, 8);
+
+
+function get_reference_counter ($v) ::: int;
+function parse_multipart ($post ::: string, $boundary ::: string) ::: void;
+function unimplemented_function ($a1 = "", $a2 = "", $a3 = "", $a4 = "", $a5 = "", $a6 = "", $a7 = "", $a8 = "", $a9 = "");
+
+/** For local usage only **/
+//function system ($query ::: string) ::: int;

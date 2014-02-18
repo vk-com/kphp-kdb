@@ -1,0 +1,174 @@
+#!/usr/bin/perl
+use strict;
+use warnings;
+use Getopt::Std;
+use POSIX;
+use sigtrap 'handler' => \&terminate, qw(TERM INT);
+use sigtrap 'handler' => \&ignore, qw(HUP);
+use sigtrap 'handler' => \&logrotate, qw(USR1);
+
+my $EXEDIR="/usr/share/engine/bin";
+my $BACKUP_EXE="$EXEDIR/backup-engine";
+
+-x $BACKUP_EXE or die "$BACKUP_EXE not found";
+
+my $DIRBASE = "/var/lib/engine/data";
+my %Opts;
+
+if (!getopts ('fcihu:vwl:', \%Opts) || $Opts{'h'}) {
+    print STDERR "usage: $0 [-f] [-c] [-i] [-v|-w]\n-f\tFast-copy files at start\n-c\tComplete backup (each disk is backed up to every other)\n-i\tIgnore if next disk is empty\n";
+    exit 1;
+}
+
+my $username = $Opts{'u'};
+my $logfile = $Opts{'l'};
+
+if (!POSIX::getuid() || !POSIX::geteuid()) {
+    if (!$username) {
+	die "cannot work under root\n";
+    }
+    my ($login,$pass,$uid,$gid) = getpwnam($username) or die "$username not in passwd file\n";
+    die "cannot change user to $username ($uid:$gid)\n" if (POSIX::setgid($gid) < 0 || POSIX::setuid($uid) < 0);
+}
+
+my $verbosity = exists($Opts{'v'}) ? int($Opts{'v'}) : 0;
+$verbosity += 2 if ($Opts{'w'});
+
+my @Dirs;
+my @D;
+
+for my $i (1 .. 32, 'a' .. 'z') {
+    my $d = "$DIRBASE$i";
+    next unless -d $d && -r $d && -w $d && -x $d && -o $d;
+    push @D, $i;
+    push @Dirs, $d;
+}
+
+die "no directories to back up\n" unless @Dirs;
+
+my %Jobs;
+my $job_cnt = 0;
+
+sub add_job {
+    my ($a,$b) = @_;
+    die "$DIRBASE$a not found" unless -d "$DIRBASE$a";
+    die "$DIRBASE$b not found" unless -d "$DIRBASE$b";
+    -d "$DIRBASE$b/backup$a" or mkdir ("$DIRBASE$b/backup$a", 0750) or die "cannot create $DIRBASE$b/backup$a\n";
+    $Jobs{$a} = {} unless exists($Jobs{$a});
+    $Jobs{$a}{$b} = -1;
+    $job_cnt++;
+}
+
+if ($Opts{'c'}) {
+    for my $i (@D) {
+	for my $j (@D) {
+	    &add_job ($i, $j) unless $i eq $j;
+	}
+    }
+} else {
+    my $prev, my $first;
+    for my $i (@D) {
+	&add_job ($prev, $i) if $prev;
+	$first = $i unless $prev;
+	$prev = $i;
+    }
+    &add_job ($prev, $first) if $first;
+}
+
+die "nothing to do\n" unless $job_cnt;
+
+print STDERR "have $job_cnt jobs\n" if $verbosity;
+
+sub check_job {
+    my ($a, $b) = @_;
+    my $pid = $Jobs{$a}{$b};
+    return 0 if $pid < 0 || ! -d "/proc/$pid";
+    return 1;
+}
+
+sub run_wait {
+    while (1) {
+	my $pid = waitpid (-1, WNOHANG);
+	last unless $pid > 0;
+	my $found = 0;
+	for my $i (keys %Jobs) {
+	    for my $j (keys %{$Jobs{$i}}) {
+		if ($pid == $Jobs{$i}{$j}) {
+		    $Jobs{$i}{$j} = -1;
+		    $found++;
+		}
+	    }
+	}
+	die "unknown child $pid\n" unless $found == 1;
+    }
+}
+
+sub run_job {
+    my ($a, $b) = @_;
+    my $pid = fork();
+    die "cannot fork(): $!\n" if $pid < 0;
+    if (!$pid) {
+	my $parms="";
+	$parms = "-u $username " if $username;
+	$parms .= '-'.'v' x $verbosity.' ' if $verbosity;
+	$parms .= '-f ' if $Opts{'f'};
+	$parms .= "$DIRBASE$a $DIRBASE$b/backup$a";
+	print STDERR "executing $BACKUP_EXE $parms\n" if $verbosity > 2;
+	exec "$BACKUP_EXE $parms" or die "cannot execute $BACKUP_EXE $parms\n";
+    } else {
+	$Jobs{$a}{$b} = $pid;
+    }
+}
+
+my $slow_start = $job_cnt;
+
+while (1) {
+    my $skip = 0;
+    run_wait ();
+    for my $i (keys %Jobs) {
+	for my $j (keys %{$Jobs{$i}}) {
+	    if (!check_job ($i, $j)) {
+		run_job ($i, $j);
+		run_wait ();
+		if ($slow_start > 0) {
+		    --$slow_start;
+		    $skip = 1;
+		    last;
+		}
+	    }
+	}
+	last if $skip;
+    }
+    sleep (1);
+}
+
+sub terminate {
+    my @Pids = ();
+    for my $i (keys %Jobs) {
+	for my $j (keys %{$Jobs{$i}}) {
+	    my $pid = $Jobs{$i}{$j};
+	    next unless $pid > 0;
+	    print STDERR "Terminating $pid.\n" if $verbosity > 1;
+	    push @Pids, $pid;
+	}
+    }
+    kill SIGTERM, @Pids if @Pids;
+    print STDERR "Terminated.\n";
+    exit 0;
+}
+
+sub ignore {
+    print STDERR "SIGHUP ignored.\n";
+}
+
+sub logrotate {
+    if ($logfile) {
+	print STDERR "Logs rotated\n";
+	close *STDIN;
+	close *STDOUT;
+	close *STDERR;
+	open *STDIN, ">>/dev/null";
+	open *STDOUT, ">>$logfile";
+	open *STDERR, ">>$logfile";
+    }
+}

@@ -1,0 +1,85 @@
+%{
+#include "token.h"
+typedef struct KeywordType_t KeywordType;
+%}
+struct KeywordType_t
+{
+  const char *keyword;
+  TokenType type;
+};
+%%
+while, tok_while
+if, tok_if
+else, tok_else
+elseif, tok_elseif
+for, tok_for
+foreach, tok_foreach
+break, tok_break
+continue, tok_continue
+echo, tok_echo
+dbg_echo, tok_dbg_echo
+function, tok_function
+extern_function, tok_ex_function
+array, tok_array
+Array, tok_array
+as, tok_as
+case, tok_case
+switch, tok_switch
+class, tok_class
+const, tok_const
+default, tok_default
+do, tok_do
+eval, tok_eval
+exit, tok_exit
+die, tok_exit
+global, tok_global
+static, tok_static
+goto, tok_goto
+return, tok_return
+list, tok_list
+auto, tok_auto
+include, tok_require
+include_once, tok_require_once
+require, tok_require
+require_once, tok_require_once
+isset, tok_isset
+print, tok_print
+var_dump, tok_var_dump
+min, tok_min
+max, tok_max
+pack, tok_pack
+sprintf, tok_sprintf
+printf, tok_printf
+store_many, tok_store_many
+unset, tok_unset
+var, tok_var
+__CLASS__, tok_class_c
+__FILE__, tok_file_c
+__FUNCTION__, tok_func_c
+__DIR__, tok_dir_c
+__LINE__, tok_line_c
+__METHOD__, tok_method_c
+int, tok_int
+float, tok_float
+string, tok_string
+object, tok_object
+bool, tok_bool
+false, tok_false
+true, tok_true
+FALSE, tok_false
+TRUE, tok_true
+NULL, tok_null
+null, tok_null
+xor, tok_log_xor_let
+and, tok_log_and_let
+or, tok_log_or_let
+define, tok_define
+DEFINE, tok_define
+defined, tok_defined
+define_raw, tok_define_raw
+new, tok_new
+throw, tok_throw
+Exception, tok_Exception
+try, tok_try
+catch, tok_catch
+throws, tok_throws
