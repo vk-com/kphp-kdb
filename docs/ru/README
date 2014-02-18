@@ -21,4 +21,4 @@
 
 `make all` или `make` компилирует все подпроекты, кроме kphp, image, filesys, spell, tl, binlog.
 
-Предподчительнее использовать ld gold, а не ld bfd.
+Предпочтительнее использовать ld gold, а не ld bfd.
