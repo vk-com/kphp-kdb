@@ -1,5 +1,4 @@
-This is VK-KittenDB/Engine project, consisting of several high-performance "engines"
-(specialized non-relational databases). 
+This is VK/KittenPHP-DB-Engine project, consisting of efficient PHP-to-C++ translator and several auxiliary high-performance "engines" (specialized non-relational databases), needed for its deployment.
 
 It has been developed since 2009 mostly by Vkontakte Ltd, operator of social network VK.COM, and thoroughfully tested in high-performance enviroments, until a version useful for the general public was obtained. Fulfilling several previously given public promises, this version is now released for public use under GPL/LGPL terms.
 
