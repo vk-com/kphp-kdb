@@ -15,11 +15,17 @@ KittenDB/Engine состоит из большого количества нез
 
 
 Файл /etc/engine/engine.1.conf:
+<br>
 ---------
+<br>
 execute lists-engine
+<br>
 arg1    groups23
+<br>
 -p	11200
+<br>
 -vvv
+<br>
 ---------
 
 При запуске /etc/init.d/engine start 1 или просто /etc/init.d/engine start (который легко сделать автоматическим при загрузке)
@@ -34,6 +40,7 @@ arg1    groups23
 Кроме того, если его запустить под root'ом, он будет работать под пользователем kitten (которому лучше всего прописать /var/lib/engine в качестве домашнего каталога и uid 239). Желательно, чтобы у этого пользователя были права rwx на каталог /var/lib/engine, или нужные подкаталоги.
 
 Внимание: перед запуском под Линукс желательно сделать 
+<br>
 echo 1 > /proc/sys/vm/overcommit_memory
 
 либо прописать vm.overcommit_memory = 1 в /etc/sysctl.conf.
@@ -44,19 +51,28 @@ echo 1 > /proc/sys/vm/overcommit_memory
 Для lists-engine он выглядит примерно так:
 
 +0  int LEV_START = 0x044c644b;  // общий заголовок для всех KDB-бинлогов
+<br>
 +4  int type      = 0x6ef20101;  // формат бинлога (свой у каждого движка)
+<br>
 +8  int extra_bytes = 0;
+<br>
 +12 int split_mod = 128;         // модуль для дробления
+<br>
 +16 int split_min = 98;
-+20 int split_max = 99;          // обычно 0 <= split_min < split_max <= split_mod, и split_max = split_min + 1
+<br>
++20 int split_max = 99;          // обычно 0 &lt;= split_min &lt; split_max &lt;= split_mod, и split_max = split_min + 1
+<br>
 +24 дополнительные байты в количестве extra_bytes штук, дополненные до границы 4 байт (в данном случае не нужны)
 
 $ hexdump -C /var/lib/engine/groups23.bin 
+<br>
 00000000  4b 64 4c 04 01 01 f2 6e  00 00 00 00 80 00 00 00  |KdL....n........|
+<br>
 00000010  62 00 00 00 63 00 00 00                           |b...c...|
 
 Параметры дробления означают, что этот экземпляр lists-engine будет обрабатывать запросы к спискам с list_id, удовлетворяющим
-  abs(list_id) % 128 == 98.
+<br>
+abs(list_id) % 128 == 98.
 
 После того, как бинлог создан и передан пользователю kitten, можно запускать lists-engine -- из командной строки или через механизм запуска демонов ( /etc/init.d/engine start 1 ).
 
@@ -66,20 +82,31 @@ $ hexdump -C /var/lib/engine/groups23.bin
 Почти все движки поддерживают вариант memcache-интерфейса. Поэтому к ним можно подключиться из PHP или другого языка высокого уровня через обычный memcache-интерфейс:
 
 <code>$MC_Lists = new Memcache ('127.0.0.1', 11200);
+<br>
 $MC_Lists->add ("entry98_239", "1,0");
+<br>
 $MC_Lists->add ("entry98_666", "2,66666");
+<br>
 $MC_Lists->add ("entry226_77", "7,4");
+<br>
 var_dump ($MC_Lists->get ("list98");</code>
 
 Либо даже через telnet:
 
 <code>$ telnet localhost 11200
+<br>
 version
+<br>
 VERSION/2.3.9
+<br>
 set entry98_17 0 0 3
+<br>
 3,0
+<br>
 STORED
+<br>
 get list98
+<br>
 3,17,239,666
 </code>
 
@@ -90,10 +117,15 @@ get list98
 
 После этого можно будет слать запросы примерно так:
 <code>$RPC_Lists = new_rpc_connection ("localhost", 11200);
+<br>
 var_dump (rpc_tl_query_result (rpc_tl_query ($RPC_Lists, array (array ("lists.setEntry", 1, 1, array (98), (1 << 15) + (1 << 6), array ("flags" => 3, "object_id" => array (17)))))));
+<br>
 var_dump (rpc_tl_query_result (rpc_tl_query ($RPC_Lists, array (array ("lists.getList", 1, 1, array (98), (1 << 15))))));
+<br>
 --
+<br>
 array ("_" => "rpcQueryResult", "result" => true);
+<br>
 array ("_" => "rpcQueryResult", "result" => array ("total" => 3, "vector" => array (array (17), array (239), array (666))));
 </code>
 

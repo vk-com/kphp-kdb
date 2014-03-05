@@ -1,5 +1,3 @@
-# Title: [[KittenDB Comment News]]
-
 == Обращение к Comment News Engine из PHP через memcache-интерфейс ==
 
 <code>$MC_News = new Memcache ($server_ip, $server_port);</code>
