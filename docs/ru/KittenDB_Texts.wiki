@@ -82,13 +82,13 @@
 Важно отметить, что набор типов подсписков, которых можно получать для каждого ящика, фиксирован и предопределен для каждого экземпляра text-engine. При попытке работать с подсписком, не входящим в этот предопределенный набор, возвращается ошибка <code>NOT_SUPPORTED</code>.
 
 == Список доступных функций ==
-См. [[KittenDB Texts Functions]].
+См. [[Kitten_DB_Texts_Functions.wiki|KittenDB Texts Functions]].
 
 == Список дополнительных функций (поиск и работа с историей) ==
-См. [[KittenDB Texts Extra]].
+См. [[Kitten_DB_Texts_Extra.wiki|KittenDB Texts Extra]].
 
 == http-интерфейс для чата ==
-См. [[KittenDB Texts HTTP]].
+См. [[Kitten_DB_Texts_HTTP.wiki|KittenDB Texts HTTP]].
 
 === Поддержка списка друзей онлайн ===
-См. [[KittenDB Texts Online]]
+См. [[Kitten_DB_Texts_Online.wiki|KittenDB Texts Online]]

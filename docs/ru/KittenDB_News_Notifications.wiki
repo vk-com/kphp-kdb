@@ -5,7 +5,7 @@
 ==Список доступных функций==
 ===Добавление обновления===
 
- $MC_News->set("notification_update$id", "$type,$user,$owner,$place,$item", 0, 600); 
+$MC_News->set("notification_update$id", "$type,$user,$owner,$place,$item", 0, 600); 
 
 Добавляет новое событие, касающееся пользователю $id. Параметр - строка, состоящая из 5 чисел, имеющих следующий смысл: 
 {|
@@ -45,38 +45,53 @@
 
 ===Удаление всех обновлений данного объекта===
 delete("notification_updates{$type}_{$owner}_{$place}") 
+<br>
 Удаляет все обновления, относящиеся к указанному объекту. 
 
 
 ===Удаление одного обновления данного объекта===
 delete("notification_update{$type}_{$owner}_{$place}_{$item}") 
+<br>
 Удаляет (а на самом деле - прячет) обновления, относящиеся к указанному объекту, с переданным значением поля item. 
 
 ===Восстановление одного обновления данного объекта===
 delete("undelete_notification_update{$type}_{$owner}_{$place}_{$item}") 
+<br>
 Восстанавливает (а на самом деле - делает видимыми) обновления, относящиеся к указанному объекту, с переданным значением поля item.
 
 ===Удаление одного обновления данного объекта для данного пользователя===
 delete("notification_user_update{$user_id}_{$type}_{$owner}_{$place}_{$item}") 
+<br>
 Удаляет (а на самом деле - прячет) обновления, относящиеся к указанному объекту, с переданным значением поля item. 
 
 ===Восстановление одного обновления данного объекта для данного пользователя===
 delete("undelete_notification_user_update{$user_id}_{$type}_{$owner}_{$place}_{$item}") 
+<br>
 Восстанавливает (а на самом деле - делает видимыми) обновления, относящиеся к указанному объекту, с переданным значением поля item.
 
 ===Получение обновлений===
 get("notification_updates{$mask}_{$date},{$enddate}_{$grouping}:{$id}"); 
+<br>
 get("notification_updates{$mask}_{$date},{$enddate}_{$grouping}>{$timestamp}:{$id}"); 
+<br>
 get("notification_updates{$mask}_{$date},{$enddate}_{$grouping}#{$limit}:{$id}"); 
+<br>
 get("notification_updates{$mask}_{$date},{$enddate}_{$grouping}>{$timestamp}#{$limit}:{$id}"); 
+<br>
 Получает список обновлений, начиная с суток, определенных unixtime $date, до момента $enddate, если это не 0. Сутки отсчитываются по 24 часа, начиная с указанного момента времени до текущего момента.
+<br>
 Параметр $grouping равен 0, если не надо группировать однотипные записи; в противном случае он представляет собой максимальное возвращаемое количество различных значений параметров в каждой группе. 
+<br>
 Группировка осуществляется по type + owner + place. Параметр $timestamp, если он есть, означает, что нужно вернуть только записи, созданных после записи с данным timestamp. Параметр $limit, если он есть, ограничивает сверху количество записей в возвращаемом массиве. mask показывает какие типы обновлений выдавать. Группы будут отсортированы по времени последнего события из этих групп. В случае, если для тройки (type + owner + place) будут события из разных суток, для каждых суток будет отдельная группа.
 
 Каждый элемент возвращаемого массива имеет вид:
-если grouping > 0: {type, owner, place, {#number_total, "user1_item1", "user2_item2", ... , "userk_itemk"}, {#number_total, date1, date2, ..., datek}}
+<br>
+если grouping &gt; 0: {type, owner, place, {#number_total, "user1_item1", "user2_item2", ... , "userk_itemk"}, {#number_total, date1, date2, ..., datek}}
+<br>
 если grouping = 0: {type, owner, place, "user_item", date}
 
 get("raw_notification_updates{$user_id}");
+<br>
 get("raw_notification_updates{$mask}[{$stdate},{$enddate}]:{$id}");
+<br>
 Получает список обновлений в сыром виде - в виде списка чисел через запятую. Первое число N - количество элементов. Далее идёт 8N чисел. Каждое обновление определяется 8 числами - user_id, date, random_tag, type, user, owner, place, item.

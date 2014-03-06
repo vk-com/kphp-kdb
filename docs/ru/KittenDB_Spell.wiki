@@ -1,11 +1,15 @@
 Движок, проверяющий правописание с помощью библиотеки aspell. 
 
 Использование:
-<tt>$MC_Spell = new Memcache ($spell_engine_ip, $spell_engine_port, ...);
+<tt>
+<pre>
+$MC_Spell = new Memcache ($spell_engine_ip, $spell_engine_port, ...);
 ...
 if ($MC_Spell->set ("text{$text_id}", $text)) { 
   $r = $MC_Spell->get ("request{$text_id}"); 
-} </tt>
+}
+</pre>
+</tt>
 Возвращает три числа разделенные запятой. 
 # Количество слов, которые были найдены в словаре 
 # Количество слов, которые не были найдены в словаре, но для которых aspell предложил хотя бы одно предполагаемое написание. 
@@ -14,6 +18,7 @@ if ($MC_Spell->set ("text{$text_id}", $text)) {
 
 === Словари ===
 <tt>$a = explode ("\n", get ("dicts"));</tt>
+<br>
 $a - содержит статистику по словарям (разделенную табуляциями). 
 
 ===Ключи запуска для админов===

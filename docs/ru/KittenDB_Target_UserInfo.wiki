@@ -1,8 +1,11 @@
 ==set==
 
-Установка параметров для таргетированых объявлений/поиска по людям. 
+Установка параметров для таргетированых объявлений/поиска по людям.
+<br>
 Допустимые ключи:
-<code>"visit{$user_id}"
+<code>
+<pre>
+"visit{$user_id}"
 "rate{$user_id}"
 "cute{$user_id}"
 "rates{$user_id}"
@@ -21,7 +24,7 @@
 "military{$user_id}"
 "address{$user_id}"
 "interests{$user_id}#{$type}" </code>
-<code>$type</code> - тип интереса (1 - Деятельность, 2 - Интересы, 3 - Музыка, 4 - Фильмы, 5 - Телешоу, 6 - Книги, 7 - Игры, 8 - Источники вдохновения ), 0 < <code>$type</code> <= 15
+<code>$type</code> - тип интереса (1 - Деятельность, 2 - Интересы, 3 - Музыка, 4 - Фильмы, 5 - Телешоу, 6 - Книги, 7 - Игры, 8 - Источники вдохновения ), 0 &lt; <code>$type</code> &lt;= 15
 <code>"user_group{$user_id}_{$group_id}"
 "user_lang{$user_id}_{$lang_id}"
 "hometown{$user_id}"
@@ -39,6 +42,7 @@
 "timezone{$user_id}"
 "gcountry{$user_id}"
 "custom{$custom_id}_{$user_id}"
+</pre>
 </code>
 <code>"user_group_types{$user_id}"</code> - принимает в качестве параметра список целых чисел от 0 до 127 - категории групп, в которые входит данный пользователь.
 <code>"user_single_group_type{$user_id}"</code> - параметр - одно число от 0 до 127, добавляет пользователю группу заданной категории (от 0 до 127; удалять нельзя!)
@@ -49,7 +53,9 @@
 ==delete==
 
 допустимые ключи: 
-<code>"user_group{$user_id}_{$group_id}"
+<code>
+<pre>
+"user_group{$user_id}_{$group_id}"
 "user{$user_id}"
 "education{$user_id}"
 "address{$user_id}"
@@ -63,5 +69,6 @@
 "user_groups_positive{$user_id}"
 "user_groups_negative{$user_id}"
 "interests{$user_id}#{$type}"
+</pre>
 </code>
-0 <= <code>$type</code> <= 15; при <code>$type=0</code> удаляются все интересы.
+0 &lt;= <code>$type</code> &lt;= 15; при <code>$type=0</code> удаляются все интересы.

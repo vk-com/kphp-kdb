@@ -81,33 +81,29 @@ abs(list_id) % 128 == 98.
 === Memcache-интерфейс ===
 Почти все движки поддерживают вариант memcache-интерфейса. Поэтому к ним можно подключиться из PHP или другого языка высокого уровня через обычный memcache-интерфейс:
 
-<code>$MC_Lists = new Memcache ('127.0.0.1', 11200);
-<br>
+<code>
+<pre>
+$MC_Lists = new Memcache ('127.0.0.1', 11200);
 $MC_Lists->add ("entry98_239", "1,0");
-<br>
 $MC_Lists->add ("entry98_666", "2,66666");
-<br>
 $MC_Lists->add ("entry226_77", "7,4");
-<br>
-var_dump ($MC_Lists->get ("list98");</code>
+var_dump ($MC_Lists->get ("list98");
+</pre>
+</code>
 
 Либо даже через telnet:
 
-<code>$ telnet localhost 11200
-<br>
+<code>
+<pre>
+$ telnet localhost 11200
 version
-<br>
 VERSION/2.3.9
-<br>
 set entry98_17 0 0 3
-<br>
 3,0
-<br>
 STORED
-<br>
 get list98
-<br>
 3,17,239,666
+</pre>
 </code>
 
 Через telnet особенно интересно вводить команду stats.
@@ -116,17 +112,15 @@ get list98
 Это более прогрессивный метод, однако он требует установки расширения vkext для PHP (в KittenPHP поддержка RPC встроена). В конфигурации vkext надо указать путь к файлу combined.tlo, генерируемому при компиляции движков через make в каталоге objs/TL .
 
 После этого можно будет слать запросы примерно так:
-<code>$RPC_Lists = new_rpc_connection ("localhost", 11200);
-<br>
+<code>
+<pre>
+$RPC_Lists = new_rpc_connection ("localhost", 11200);
 var_dump (rpc_tl_query_result (rpc_tl_query ($RPC_Lists, array (array ("lists.setEntry", 1, 1, array (98), (1 << 15) + (1 << 6), array ("flags" => 3, "object_id" => array (17)))))));
-<br>
 var_dump (rpc_tl_query_result (rpc_tl_query ($RPC_Lists, array (array ("lists.getList", 1, 1, array (98), (1 << 15))))));
-<br>
 --
-<br>
 array ("_" => "rpcQueryResult", "result" => true);
-<br>
 array ("_" => "rpcQueryResult", "result" => array ("total" => 3, "vector" => array (array (17), array (239), array (666))));
+</pre>
 </code>
 
 == MC-Proxy и RPC-Proxy ==

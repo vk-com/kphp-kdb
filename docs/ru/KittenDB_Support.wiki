@@ -3,22 +3,27 @@
 
 ===Добавление нового ответа на вопрос===
 <code>set("answer{$question_id},{$user_id},{$mark}", $question."\t".$answer);</code>
-
+<br>
 <code>$question_id</code> – идентификатор вопроса, игнорируется,
+<br>
 <code>$user_id</code> – id человека, который на него ответил, игнорируется,
+<br>
 <code>$mark</code> – оценка полезности ответа,
+<br>
 <code>$question</code> – заданный вопрос,
+<br>
 <code>$answer</code> – ответ на вопрос.
 
 ===Изменение оценки ответа на вопрос===
 <code>set("mark{$question_id}", {$new_mark});</code>
-
+<br>
 <code>$question_id</code> – идентификатор вопроса,
+<br>
 <code>$new_mark</code> – новая оценка полезности ответа.
 
 ===Удаление ответа на вопрос===
 <code>get("delete_answer{$question_id}");</code>
-
+<br>
 <code>$question_id</code> – идентификатор вопроса.
 
 В случае успеха возвращает "DELETED" (true).
@@ -27,14 +32,19 @@
 Запрос является парой set/get.
 
 <code>set("question{$random_tag}", $question);</code>
+<br>
 <code>get("answer{$question_id},{$user_id},{$random_tag}[#{$cnt}]");</code>
-
+<br>
 <code>$random_tag</code> – случайное число от 1 до 10^9, которое должно быть
-  одним и тем же для обоих запросов,
+одним и тем же для обоих запросов,
+<br>
 <code>$question</code> – заданный вопрос,
+<br>
 <code>$question_id</code> – идентификатор вопроса, игнорируется,
+<br>
 <code>$user_id</code> – id человека, который будет отвечать на вопрос,
-  игнорируется,
+игнорируется,
+<br>
 <code>$cnt</code> – максимальное количество возвращённых ответов.
 
 Результат возвращается в виде PHP массива. Каждый элемент массива – массив

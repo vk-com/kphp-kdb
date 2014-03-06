@@ -3,30 +3,56 @@
 Чтобы <b>copyexec-results-engine</b> возвращал для транзакции статус <b>unset</b>, нужно, чтобы <b>copyexec-engine</b> с данного хоста, один раз приконнектился к <b>copyexec-results-engine</b> и у него совпадал volume_id.
 ===Запросы возвращающие количество серверов===
 <tt>$r = $CRE->get ("rfreqs{$volume_id},{$transaction_id}");</tt>
+<br>
 Возвращает строку состоящую из 2*N чисел, разделённых запятыми, образующих пары - статус+результат транзакции  (одно число), количество серверов. В старших битах результата, закодирован статус транзакции.
+
 <tt>$r = $CRE->get ("srfreqs{$volume_id},{$transaction_id}");</tt>
+<br>
 Aналогично предыдущей.  Статус от результата разделен двоеточием. Статус - строка, результат ''hex'' с префиксом 0x.
+
 <tt>$r = $CRE->get ("sfreqs{$volume_id},{$transaction_id}");</tt>
+<br>
 Группировка происходит по статусу транзакции (статусы возвращается в виде строкового значения - "running", "failed", etc.). 
+
 ===Запросы возвращающие имена серверов===
 <tt>$r = $CRE->get ("rhosts{$volume_id},{$transaction_id},{$result_or},{$result_and}");</tt>
+<br>
 Возвращает список hostname, разделённых запятыми. На каждом из hostname, статус+результат ($r) транзакции $transaction_id, удовлетворяет условию: ($r & $result_and) == $result_or. 
+
 <tt>$r = $CRE->get ("shosts{$volume_id},{$transaction_id},{$status}");</tt>
+<br>
 Возвращает список пар hostname, результат. На каждом из hostname, статус транзакции равен $status. $status - cтрока ("running", "failed", etc.). Результат возвращается, как ''hex'' с префиксом 0x.
+
 <tt>$r = $CRE->get ("srhosts{$volume_id},{$transaction_id},{$status_and_result}");</tt>
+<br>
 Возвращает список hostname, разделённых запятыми.  $status_and_result, как в ''srfreqs'' (terminated:0x0001).
+
 <tt>$r = $CRE->get ("deadhosts{$volume_id},{$delay}");</tt>
+<br>
 Возвращает список hostname (разделённые запятыми), которые не посылали данных, а также ping пакет последные $delay секунд.
+
 <tt>$r = $CRE->get ("deadhosts_full{$volume_id},{$delay}");</tt>
+<br>
 Аналогично ''deadhosts'', но результат выводится, как в ''collisions''. В частности, передаются random_tag, необходимые для ''disable''.
+
 ===Разное===
+
 <tt>$r = $CRE->get ("disable0x{$random_tag_hex}");</tt>
+<br>
 Отключает хост с данным random_tag. Выключенный хост не учитывается при запросах freqs, hosts, deadhosts, colllisions. Возвращает 1, если хост существует и 0 в противном случае.
+
 <tt>$r = $CRE->get ("enable0x{$random_tag_hex}");</tt>
+<br>
 Включает хост с данным random_tag.
+
 <tt>$r = $CRE->get ("list_disabled{$volume_id}");</tt>
+<br>
 Возвращает список выключенных хостов, на каждой строке - описание хоста ("$hostname,$random_tag,$first_time,$last_time').
+
 <tt>$r = $CRE->get ("volumes");</tt>
+<br>
 Возвращает список volume_id , разделённых запятыми.
+
 <tt>$r = $CRE->get ("collisions");</tt>
+<br>
 Возвращает отсортированный список обнаруженных коллизий (совпали hostname и volume_id). По одному описанию хоста на одной строчке. "{$volume_id},{$hostname},{$random_tag},{$first_data_time},{$last_data_time}".
