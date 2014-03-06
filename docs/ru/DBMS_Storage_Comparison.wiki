@@ -45,22 +45,18 @@
 
 Такая таблица может быть описана следующим образом на SQL:
 <br>
-<code>CREATE TABLE details (
-<br>
+<pre>
+<code>
+CREATE TABLE details (
 id BIGINT(20) NOT NULL auto_increment,
-<br>
 doc BIGINT(20) NOT NULL,
-<br>
 word BIGINT(20) NOT NULL,
-<br>
 PRIMARY KEY (id),
-<br>
 UNIQUE KEY word_doc_idx (word, doc),
-<br>
 KEY doc_idx (doc)
-<br>
 );
 </code>
+</pre>
 <br>
 Условия эффективности выполнения операций 1), 2), 3) в данном случае преобразованы в описание индексов. Отметим, что это описание на SQL есть только часть схемы в нашем понимании, поскольку не указано явно, что мы собираемся выполнять только запросы 1),2),3); a priori MySQL или любая другая СУБД морально готовы выполнять любые SQL-запросы.
 
