@@ -99,7 +99,7 @@ get("recommend_updates{$type_mask}_{$date},{$enddate}_{$id}_{$T}>{$timestamp}#{$
 <br>
 Получает список рекомендаций объектов.
 
-Параметры type_mask, data, enddate выполняют те же роли, что и в [[Kitten_DB_Newsfeed.wiki|KittenDB_Newsfeed]].
+Параметры type_mask, data, enddate выполняют те же роли, что и в [[KittenDB_Newsfeed.wiki|KittenDB_Newsfeed]].
 <br>
 Параметр $user_list представляет из себя набор чисел, разделённых запятыми: "$uid1_$rate1,$uid2_$rate2,..",
 где $uidN, $rateN - целые числа. $rateN задаёт значимость действий пользоваля с $uidN.

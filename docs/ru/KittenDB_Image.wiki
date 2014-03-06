@@ -155,7 +155,8 @@
 * "point" 
 * "quadratic" 
 * "sinc" 
-* "triangle" 
+* "triangle"
+
 === Memcached протокол ===
 $prog_id - <b>случайный</b> 64-битный идентификатор задачи
 <br>
@@ -183,13 +184,13 @@ $prog_id - <b>случайный</b> 64-битный идентификатор 
 Если длина $r превышает 256K, $r будет обрезана. 
 
 === Извлечение EXIF заголовков (пример Форт программы) ===
-<tt>
 <pre>
+<tt>
 "test.jpg" PING
 DUP "EXIF:Orientation" GETATTR PRINTLN
 DUP "EXIF:Model" GETATTR PRINTLN
 DUP "EXIF:GPSLongitude" GETATTR PRINTLN
 DROP
-</pre>
 </tt>
+</pre>
 

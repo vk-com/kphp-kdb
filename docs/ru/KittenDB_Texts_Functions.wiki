@@ -204,4 +204,4 @@
 Изменяет текст сообщения на переданный. При этом сообщение должно было существовать ранее.
 
 == Поиск и работа с историей ==
-См. [[Kitten_DB_Texts_Extra.wiki|KittenDB Texts Extra]].
+См. [[KittenDB_Texts_Extra.wiki|KittenDB Texts Extra]].

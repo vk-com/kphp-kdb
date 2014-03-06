@@ -29,16 +29,16 @@ $r = get("check_file{$volume_id},{$size_in_bytes},{$max_disk_used_space_percent}
 ===Адресация документа по user_id, album_id, local_id===
 Поскольку фотография обычно получается как результат работы '''image-engine''', '''storage-engine''' умеет добавлять только локальные файлы. 
 
-<code>
 <pre>
+<code>
 $r = get ("file{$volume_id},{$path}"); 
 if ($r !== false) { 
   $a = explode (",", $r); 
   $secret = $a[0]; 
   $local_id = $a[1]; 
 } 
-</pre>
 </code>
+</pre>
 
 $secret возвращается в кодировке (RFC 4648 'base64url' encoding, cмотреть страницу Base64 википедии), $local_id - в шестнадцатеричной системе счисления. 
 
@@ -84,27 +84,44 @@ get возвращает "{$secret},{$md5_in_base64url}".
 |} 
 
 ===Работа с томами по memcache протоколу===
-<pre>
 get("volumes"); 
+<br>
 Возвращает строку, в которой через запятую указаны volume_id томов, с которыми работает экземпляр storage-engine. 
+<br>
  $a = get("volume{$volume_id}"); 
+<br>
 Возвращает ассоциативный массив со статистикой для заданного тома. 
+<br>
 Младший бит mode - файл открыт для чтения, 2 бит mode - файл открыт для записи. 
+<br>
  $a = get("Volume{$volume_id}"); 
+<br>
 Возвращает статистику для заданного тома в ''tab-separated'' формате . 
+<br>
  $a = get("dirs"); 
+<br>
 Возвращает в массиве статистику по директориям 
+<br>
  $a = get("disable_file{$volume_id},{$dir_id}"); 
+<br>
 if ($a == "1") { 
+<br>
   //файл бинлога был успешно заблокирован 
+<br>
 } else if ($a === false) { 
+<br>
   $r = get("Volume{$volume_id}"); 
+<br>
   if ($r !== false) { 
+<br>
     //проверить mode на равенство 0 у соответствующего файла бинлога 
+<br>
   } 
+<br>
 } 
+<br>
  $a = get("enable_file{$volume_id},{$dir_id}"); 
-</pre>
+<br>
 Просит storage-engine переоткрыть файл после его починки. 
 * Возвращает "1" в случае успеха. 
 * Возвращает "0" в случае не успеха. 
@@ -140,6 +157,7 @@ make install
 
 ====nginx.conf====
 <pre>
+<code>
 location ~ "^/v[0-9]{1,18}/[0-9a-f]{1,8}/[A-Za-z0-9_-]{11}\.(jpg|png|gif)$" { 
   proxy_pass [http://127.0.0.1:8081]; 
   proxy_redirect off; 
@@ -149,8 +167,8 @@ location ~ "^/[A-Za-z0-9_./]+:[a-f0-9]{1,16}:[A-Za-z0-9_-]{11}:[a-f0-9]{1,8}$" {
   internal; 
   expires max; 
 } 
+</code>
 </pre>
-<br/>
 
 ===Распространенные ошибки жёстких дисков===
 * закончилось место на диске 

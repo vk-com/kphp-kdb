@@ -1,4 +1,4 @@
-[[Kitten_DB.wiki|KittenDB]] (Target/PeopleSearch) - движок, предназначенный для поиска по людям и работы с таргетированными объявлениями.
+[[KittenDB.wiki|KittenDB]] (Target/PeopleSearch) - движок, предназначенный для поиска по людям и работы с таргетированными объявлениями.
 
 Все числа, используемые как значения параметров в движке, могут принимать значения от 0 до 2^31-1, если не сказано обратного. 
 
@@ -120,20 +120,30 @@
 <code>"ad_info{$ad_id}"</code>
 <br>
 Возвращает через запятую 29 параметров объявления: <code> ad_id, flags, price, users, views, clicked, click_money, неважно, неважно, неважно, неважно, expected_gain*1e9, ext_users, неважно, l_sump0, l_sump1, l_sump2, g_sump0, g_sump1, g_sump2, lambda, delta, recent_views, recent_views_limit, factor, domain, group, category, subcategory</code>
-<pre>
+<br>
 flags - флаги (биты с 17 по 24 содержат маску сайтов, 0-based)
+<br>
 price - цена за клик;
+<br>
 users - аудитория, на которую старгетировано объявление;
+<br>
 views - количество просмотров;
+<br>
 clicked - количество кликнувших;
+<br>
 click_money - бюджет кампании;
+<br>
 expected_gain - наша ожидаемая прибыль с показа, умноженная на 1е9;
+<br>
 ext_users - залитый из php общий размер аудитории;
+<br>
 lambda - математическое ожидание того, во сколько раз объявление кликается чаще среднего, delta - дисперсия;
+<br>
 recent_views - показы за последние 5 минут в данном куске;
+<br>
 recent_views_limit - ограничение на показы за 5 минут на данный кусок;
+<br>
 factor - учетный сомножитель, умноженный на 1e6;
-</pre>
 
 <code>"ad_query{$ad_id}"</code>
 <br>
@@ -165,5 +175,5 @@ factor - учетный сомножитель, умноженный на 1e6;
 
 ===Остальное===
 
-[[Kitten_DB_Target_Search.wiki|KittenDB Target Search]]
-[[Kitten_DB_Target_UserInfo.wiki|KittenDB Target UserInfo]]
+[[KittenDB_Target_Search.wiki|KittenDB Target Search]]
+[[KittenDB_Target_UserInfo.wiki|KittenDB Target UserInfo]]

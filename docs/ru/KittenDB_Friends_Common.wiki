@@ -18,6 +18,7 @@
 или
 <br>
 <code>set("userlist{$tag}", 0, 0, "{$user1_id},...,{$userN_id}");</code>
+<br>
 <code>get("common_friends_num{$user_id}:{$tag}")</code>
 <br>
 Во второй форме $tag -- отрицательное число от -1e9 до -1. Параметры $user_id и $userK_id --- положительные целые числа. Допускается передача не более 10000 user_id за один раз (т.е. N &lt;= 10000).

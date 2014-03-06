@@ -5,14 +5,14 @@
 <code>$MC_News_Multiple = new Memcache ($server2_ip, $server2_port);</code>
 
 Далее доступ к данным осуществляется по аналогии с memcached, с помощью функций вроде
-<code>
 <pre>
+<code>
 $MC_News->get($key);
 $result = $MC_News->set($key,$value,0,600);
 $MC_News->delete($key);
 $MC_News->increment($key,$value);
-</pre>
 </code>
+</pre>
 для специально построенных ключей $key и значений $value.
 
 == Список доступных функций ==
@@ -73,15 +73,20 @@ $MC_News->set("comm_update$type,$owner,$place", "$type,$user,$group,$owner,$plac
 
 == Получение обновлений ==
 <code>get("comm_updates{$date},{$enddate}_{$grouping}:{$object_list}");</code>
+<br>
 <code>get("comm_updates{$date},{$enddate}_{$grouping}>{$timestamp}:{$object_list}");</code>
+<br>
 <code>get("comm_updates{$date},{$enddate}_{$grouping}#{$limit}:{$object_list}");</code>
+<br>
 <code>get("comm_updates{$date},{$enddate}_{$grouping}>{$timestamp}#{$limit}:{$object_list}");</code>
-<pre>
+<br>
 Получает список обновлений, начиная с суток, определенных unixtime $date, до момента $enddate, если это не 0. Сутки отсчитываются по 24 часа, начиная с указанного момента времени до текущего момента.
+<br>
 Параметр $grouping равен 0, если не надо группировать однотипные записи; в противном случае он представляет собой максимальное возвращаемое количество различных значений параметров в каждой группе.
+<br>
 Параметр $timestamp, если он есть, означает, что нужно вернуть только записи, созданных после записи с данным timestamp. Параметр $object_list представляет собой либо список $type_$owner_$place нужных объектов, перечисленных через запятую, либо отрицательное число $list_tag, если этот список id очень большой.
+<br>
 Параметр $limit, если он есть, ограничивает сверху количество записей в возвращаемом массиве.
-</pre>
 
 === Передача большого списка объектов ===
 <code>set("objectlist$list_tag", $list, 0, 600);</code>
@@ -102,6 +107,7 @@ $MC_News->set("comm_update$type,$owner,$place", "$type,$user,$group,$owner,$plac
 
 === Получение обновлений в "сыром" виде ===
 <code>get("raw_comm_updates[{$startdate},{$enddate}]:{$object_list}");</code>
+<br>
 <code>get("raw_comm_updates{$object_id}");</code>
 <br>
 Возвращает список обновлений для данного объекта или списка объектов в сыром виде: массив из 8N чисел, каждое обновление задается с помощью восьми чисел: $timestamp,$random_tag,$type,$user,$group,$owner,$place,$item.
@@ -123,10 +129,15 @@ $MC_News->set("comm_update$type,$owner,$place", "$type,$user,$group,$owner,$plac
 Можно использовать методы
 <br>
 <code>get("user_comm_updates{$date},{$enddate}_{$grouping}:{$user_id}[,{$type_mask}]");</code>
+<br>
 <code>get("user_comm_updates{$date},{$enddate}_{$grouping}>{$timestamp}:{$user_id}[,{$type_mask}]");</code>
+<br>
 <code>get("user_comm_updates{$date},{$enddate}_{$grouping}#{$limit}:{$user_id}[,{$type_mask}]");</code>
+<br>
 <code>get("user_comm_updates{$date},{$enddate}_{$grouping}>{$timestamp}#{$limit}:{$user_id}[,{$type_mask}]");</code>
+<br>
 <code>get("raw_user_comm_updates[{$startdate},{$enddate}]:{$user_id}[,{$type_mask}]");</code>
+<br>
 <code>get("raw_user_comm_updates{$user_id}[,{$type_mask}]");</code>
 
 Значения возвращаются в точности так же, как и соответствующие запросы с $object_list. В случае, если наборы закладок совпадают, результаты в точности будут одинаковыми. Маска <tt>$type_mask</tt>, если есть, позволяет получить обновления только по закладкам указанных типов (бит 2<sup>type</sup> означает, что закладки типа <tt>type</tt> надо учитывать).

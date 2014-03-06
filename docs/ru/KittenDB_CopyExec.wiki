@@ -81,6 +81,6 @@
 [[KittenDB_CopyExecResults.wiki|copyexec-results-engine]]
 
 ===Примеры===
-<code><pre>exec_result cat /proc/meminfo | awk '/MemFree:/ { i = int ($2 / 100000); if (i > 120) i = 120; exit i }'</pre></code>
+<pre><code>exec_result cat /proc/meminfo | awk '/MemFree:/ { i = int ($2 / 100000); if (i > 120) i = 120; exit i }'</code></pre>
 <br>
 Статистика по серверам по свободной памяти c шагом 100Mb.
