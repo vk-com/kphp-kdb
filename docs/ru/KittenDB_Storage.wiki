@@ -30,14 +30,12 @@ $r = get("check_file{$volume_id},{$size_in_bytes},{$max_disk_used_space_percent}
 Поскольку фотография обычно получается как результат работы '''image-engine''', '''storage-engine''' умеет добавлять только локальные файлы. 
 
 <pre>
-<code>
 $r = get ("file{$volume_id},{$path}"); 
 if ($r !== false) { 
   $a = explode (",", $r); 
   $secret = $a[0]; 
   $local_id = $a[1]; 
 } 
-</code>
 </pre>
 
 $secret возвращается в кодировке (RFC 4648 'base64url' encoding, cмотреть страницу Base64 википедии), $local_id - в шестнадцатеричной системе счисления. 
@@ -157,7 +155,6 @@ make install
 
 ====nginx.conf====
 <pre>
-<code>
 location ~ "^/v[0-9]{1,18}/[0-9a-f]{1,8}/[A-Za-z0-9_-]{11}\.(jpg|png|gif)$" { 
   proxy_pass [http://127.0.0.1:8081]; 
   proxy_redirect off; 
@@ -167,7 +164,6 @@ location ~ "^/[A-Za-z0-9_./]+:[a-f0-9]{1,16}:[A-Za-z0-9_-]{11}:[a-f0-9]{1,8}$" {
   internal; 
   expires max; 
 } 
-</code>
 </pre>
 
 ===Распространенные ошибки жёстких дисков===

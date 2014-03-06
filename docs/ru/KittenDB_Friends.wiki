@@ -14,12 +14,10 @@
 
 Далее доступ к данным осуществляется по аналогии с memcached, с помощью функций вроде
 <pre>
-<code>
 $MC_Friends->get($key);
 $result = $MC_Friends->set($key,$value,0,600);
 $MC_Friends->delete($key);
 $MC_Friends->increment($key,$value);
-</code>
 </pre>
 для специально построенных ключей $key и значений $value.
 
@@ -162,11 +160,9 @@ $MC_Friends->increment($key,$value);
 
 Можно запросить проверку сразу нескольких приватностей:
 <pre>
-<code>
 $res_array = $MC_Friends->get(array($key1, $key2, $key3, ...));
 $res1 = $res_array[$key1];
 ...
-</code>
 </pre>
 В этом случае запрашиваемые приватности должны иметь общего владельца, либо запрос следует направлять распределяющему серверу, полученному по <code>$inc->chooseFriendsPrivacyServer(0)</code>.
 

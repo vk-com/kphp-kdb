@@ -6,12 +6,10 @@
 
 Далее доступ к данным осуществляется по аналогии с memcached, с помощью функций вроде
 <pre>
-<code>
 $MC_News->get($key);
 $result = $MC_News->set($key,$value,0,600);
 $MC_News->delete($key);
 $MC_News->increment($key,$value);
-</code>
 </pre>
 для специально построенных ключей $key и значений $value.
 

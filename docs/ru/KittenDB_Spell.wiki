@@ -2,13 +2,11 @@
 
 Использование:
 <pre>
-<tt>
 $MC_Spell = new Memcache ($spell_engine_ip, $spell_engine_port, ...);
 ...
 if ($MC_Spell->set ("text{$text_id}", $text)) { 
   $r = $MC_Spell->get ("request{$text_id}"); 
 }
-</tt>
 </pre>
 Возвращает три числа разделенные запятой. 
 # Количество слов, которые были найдены в словаре 

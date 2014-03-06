@@ -9,7 +9,7 @@ $word_title_weight - вес слова в заголоке
 <br>
 $word_text_weight - вес слова в тексте 
 <br>
-$restrictions = "[12R30][S10000][7777777D]<$hash>"; #ограничения на выборку, как и в обычном search 
+$restrictions = "[12R30][S10000][7777777D]&lt;$hash&gt;"; #ограничения на выборку, как и в обычном search 
 <br>
 $rating_weights = "{$rate_weight}{$rate_normalize_function_type}R";  #optional ('R' - по убыванию, 'r' - по возрастанию) 
 <br>
