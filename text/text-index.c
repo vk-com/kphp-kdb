@@ -911,7 +911,6 @@ static int get_logrec_size (int type, void *ptr, int size) {
 
 int text_split_replay_logevent (struct lev_generic *E, int size) {
   int s;
-  static int rogozov_bugfix = 0;
 
   is_message_event = 0;
   switch (E->type) {
@@ -945,7 +944,7 @@ int text_split_replay_logevent (struct lev_generic *E, int size) {
       return s;
     }
 #define	EM	((struct lev_add_message *) E)
-    if (conv_uid (EM->user_id) < 0 || (EM->user_id == 6492 && EM->legacy_id == 0x3ace203 && !(++rogozov_bugfix & 1))) {
+    if (conv_uid (EM->user_id) < 0) {
       return s;
     }
 #undef EM
@@ -1115,8 +1114,7 @@ void adjust_message0 (int user_id, int local_id, int flags, int op, int *extra) 
 void process_message0 (struct lev_add_message *E, int extra_bytes) {
   int uid = conv_uid (E->user_id);
   int bytes = E->text_len;
-  static int rogozov_bugfix = 0;
-  if (uid < 0 || (E->user_id == 6492 && E->legacy_id == 0x3ace203 && !(++rogozov_bugfix & 1))) {
+  if (uid < 0) {
     discarded_rec++;
     return;
   }
@@ -1314,8 +1312,7 @@ void process_message1 (struct lev_add_message *E, int extra_bytes) {
   user_t *U;
   message_t *M;
 
-  static int rogozov_bugfix = 0;
-  if (uid < 0 || (E->user_id == 6492 && E->legacy_id == 0x3ace203 && !(++rogozov_bugfix & 1))) {
+  if (uid < 0) {
     return;
   }
   U = User[uid];
