@@ -23,4 +23,4 @@ and precise list of contributors. If no such header is present, *GPL* v2 (or lat
 is assumed, as described in files *GPL* v2 and **LICENSE**.
 
 * ##Russian-language documentation is available at [[docs/ru/]].
-* ##English documentation not available yet, sorry.
+* ###English documentation not available yet, sorry.
