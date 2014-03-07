@@ -11,7 +11,7 @@ Fulfilling several previously given public promises,
 this version is now released for public use under ***GPL/LGPL*** terms.
 
 * ##Source code is licensed mostly under *GPL* v2 or later 
-(see file **LICENSE** for the full text and file GPLv2 for list of all authors).
+(see file **LICENSE** for the full text and file *GPL* v2 for list of all authors).
 
 * ##Some portions are licensed under *LGPL* v2 or later 
 (see file **LICENSE.LGPL** for the full text and file **LGPL** v2 for list of all authors).
