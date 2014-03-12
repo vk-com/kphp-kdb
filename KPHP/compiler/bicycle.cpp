@@ -14,7 +14,7 @@
     You should have received a copy of the GNU General Public License
     along with VK/KittenPHP-DB-Engine.  If not, see <http://www.gnu.org/licenses/>.
 
-    This program is released under the GPL with the additional exemption 
+    This program is released under the GPL with the additional exemption
     that compiling, linking, and/or using OpenSSL is allowed.
     You are free to remove this exemption from derived works.
 
@@ -32,7 +32,6 @@ __thread int bicycle_thread_id;
 
 /*** Malloc hooks ***/
 #define BICYCLE_MALLOC
-#ifdef BICYCLE_MALLOC
 extern "C" {
 extern __typeof (malloc) __libc_malloc;
 extern __typeof (free) __libc_free;
@@ -147,7 +146,6 @@ void free (void *ptr) {
   return zallocator->free (ptr);
 }
 }
-#endif
 
 int get_thread_id() {
   return bicycle_thread_id;
