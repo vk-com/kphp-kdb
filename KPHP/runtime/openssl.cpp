@@ -41,11 +41,14 @@
 #include "files.h"
 #include "string_functions.h"
 
+#include "gost_hash.cpp"
+
 array <string> f$hash_algos (void) {
   return array <string> (
       string ("sha1", 4),
       string ("sha256", 6),
-      string ("md5", 3));
+      string ("md5", 3),
+      string ("gost", 4));
 }
 
 string f$hash (const string &algo, const string &s, bool raw_output) {
@@ -68,6 +71,8 @@ string f$hash (const string &algo, const string &s, bool raw_output) {
     return res;
   } else if (!strcmp (algo.c_str(), "md5")) {
     return f$md5 (s, raw_output);
+  } else if (!strcmp (algo.c_str(), "gost")) {
+    return f$gost (s, raw_output);
   } else if (!strcmp (algo.c_str(), "sha1")) {
     return f$sha1 (s, raw_output);
   }
@@ -135,6 +140,31 @@ string f$md5 (const string &s, bool raw_output) {
 
   if (!raw_output) {
     for (int i = 15; i >= 0; i--) {
+      res[2 * i + 1] = lhex_digits[res[i] & 15];
+      res[2 * i] = lhex_digits[(res[i] >> 4) & 15];
+    }
+  }
+  return res;
+}
+
+string f$gost (const string &s, bool raw_output) {
+  string res;
+  if (raw_output) {
+    res.assign ((dl::size_type)32, false);
+  } else {
+    res.assign ((dl::size_type)64, false);
+  }
+
+  Hash::Gost_ctx* hash_ctx = new Hash::Gost_ctx;
+  if (hash_ctx) {
+    hash_ctx->init(NULL, NULL);
+    hash_ctx->update(reinterpret_cast <const unsigned char *> (s.c_str()), (unsigned long)s.size());
+    hash_ctx->finish(reinterpret_cast <unsigned char *>(res.buffer()));
+    delete hash_ctx;
+  }
+
+  if (!raw_output) {
+    for (int i = 31; i >= 0; i--) {
       res[2 * i + 1] = lhex_digits[res[i] & 15];
       res[2 * i] = lhex_digits[(res[i] >> 4) & 15];
     }

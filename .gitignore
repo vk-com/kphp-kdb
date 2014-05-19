@@ -13,3 +13,4 @@ nohup.out
 *~
 *.err
 *.out
+.idea/
