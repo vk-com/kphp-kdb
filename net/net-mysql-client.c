@@ -247,12 +247,13 @@ static int sqlc_inner_authorise (struct connection *c) {
     
   p++;
 
-  if (q - p != sizeof (struct mysql_auth_packet_end)) {
+  /* TODO если разроботчики живы, спросить почему не подключается когда этот кусок не закоменчен */
+  /*if (q - p != sizeof (struct mysql_auth_packet_end)) {
     if (verbosity > 0) {
       fprintf (stderr, "server_auth_packet has incorrect size\n");
     }
     return -1;
-  }
+  }*/
 
   int res = SQLC_FUNC(c)->sql_check_perm ? SQLC_FUNC(c)->sql_check_perm (c) : 1;
 
