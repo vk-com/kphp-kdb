@@ -124,6 +124,7 @@ long long idx_min_free_heap = IDX_MIN_FREE_HEAP;
 int verbosity = 0;
 extern int ignored_list2;
 int metafile_mode;
+char metafiles_order = 0;
 int disable_revlist;
 int return_false_if_not_found;
 int ignore_mode;
@@ -3031,6 +3032,10 @@ int f_parse_option (int val) {
   case 'M':
     metafile_mode ++;
     break;
+  case 'U':
+    metafiles_order = atoi(optarg);
+    assert(metafiles_order == 0 || metafiles_order == 1);
+    break;
   default:
     return -1;
   }
@@ -3074,6 +3079,7 @@ int main (int argc, char *argv[]) {
   parse_option ("max-text-len", required_argument, 0, 'y', "Sets max text len (default %d)", max_text_len);
   parse_option ("ignore-actions", required_argument, 0, 'I', "Argument in format timestamp#list1_object1,list2_object2,... Ignores operations with these objects since timestamp");
   parse_option ("metafiles", no_argument, 0, 'M', "Increases metafile mode:\n mode = 1 - default metafile mode \n mode = 2 - metafiles with changes never unload");
+  parse_option ("metafiles-order", required_argument, 0, 'U', "Order of metafiles in snapshot (default %d):\n order = 0 - by list Id \n order = 1 - by last creation of entry in list", metafiles_order);
 
 
   parse_engine_options_long (argc, argv, f_parse_option);

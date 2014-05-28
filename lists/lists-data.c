@@ -118,6 +118,7 @@ int now_override;
 extern int metafile_mode;
 int revlist_metafile_mode;
 int crc32_check_mode;
+extern char metafiles_order;
 
 const char empty_string[] = {0};
 
@@ -1864,6 +1865,57 @@ int advance_revlist_iterator_id (object_id_t object_id) {
 #define PREV_REVLIST_LIST_ID (REVLIST_LIST_ID(revlist_iterator.RData,revlist_iterator.cur_pos-1))
 
 
+struct metafile_index {
+  int idx;
+  list_id_t *list_id;
+};
+
+struct metafile_index **metafile_indexes;
+
+void mfi_sort (struct metafile_index **A, int b) {
+  if (b <= 0) {
+    return;
+  }
+  int i = 0, j = b;
+  list_id_t *h = A[b>>1]->list_id;
+  struct metafile_index *t;
+  do {
+    while (list_id_less (A[i]->list_id, h)) {
+      i++;
+    }
+    while (list_id_less (h, A[j]->list_id)) {
+      j--;
+    }
+    if (i <= j) {
+      t = A[i];
+      A[i] = A[j];
+      A[j] = t;
+      i++;
+      j--;
+    }
+  } while (i <= j);
+  mfi_sort (A, j);
+  mfi_sort (A + i, b - i);
+}
+
+void make_metafile_indexes(void) {
+    metafile_indexes = zzmalloc(sizeof (void *) * (Header.tot_lists + 1));
+    int i;
+    for(i = 0; i <= Header.tot_lists; i++) {
+        metafile_indexes[i] = zzmalloc(sizeof(struct metafile_index));
+        metafile_indexes[i]->idx = i;
+        COPY_LIST_ID (metafile_indexes[i]->list_id, FLI_ENTRY_LIST_ID(i));
+    }
+
+    mfi_sort(metafile_indexes, Header.tot_lists - 1);
+
+    for (i = 0; i < Header.tot_lists; i++) {
+        assert(list_id_less (metafile_indexes[i]->list_id, metafile_indexes[i+1]->list_id));
+        assert(list_id_equal(FLI_ENTRY_LIST_ID(metafile_indexes[i]->idx), metafile_indexes[i]->list_id));
+    }
+    assert(list_id_equal(MAX_LIST_ID, metafile_indexes[Header.tot_lists]->list_id));
+}
+
 void *load_metafile (void *data, long long offset, long long size, long max_size) {
   assert (size >= 0 && size <= (long long) (dyn_top - dyn_cur));
 //  assert (size <= max_size || !max_size);
@@ -2010,6 +2062,7 @@ int load_index (void) {
       fprintf (stderr, "%ld\n", i);
     }
     assert (FLI_ENTRY_ADJUSTED(i)->list_file_offset + MIN_METAFILE_SIZE <= FLI_ENTRY_ADJUSTED(i+1)->list_file_offset);
+    /*
     if (!list_id_less (FLI_ENTRY_LIST_ID(i), FLI_ENTRY_LIST_ID(i+1))) {
       fprintf (stderr, "error in list index (%d entries): entry(%ld)=" idout " >= entry(%ld)=" idout "\n",
         Header.tot_lists,
@@ -2017,6 +2070,7 @@ int load_index (void) {
         i + 1, out_list_id (FLI_ENTRY_LIST_ID(i + 1)));
       assert (list_id_less (FLI_ENTRY_LIST_ID(i), FLI_ENTRY_LIST_ID(i+1)));
     }
+    */
     assert ((unsigned) FLI_ENTRY_ADJUSTED(i)->flags < 16);
   }
   assert (FLI_ENTRY_ADJUSTED(i)->list_file_offset == Header.revlist_data_offset);
@@ -2126,6 +2180,8 @@ int load_index (void) {
   jump_log_pos = Header.log_pos1;
   jump_log_crc32 = Header.log_pos1_crc32;
 
+  make_metafile_indexes();
+
   return 0;
 }
 
@@ -2189,15 +2245,15 @@ int find_metafile (list_id_t list_id) {
   while (r - l > 1) { // M[l] <= list_id < M[r] 
     int x = (l + r) >> 1;
     //fprintf (stderr, "%d %d %d %d %d\n", l, r, x, list_id, FLI_ENTRY_LIST_ID(x));
-    p = list_id_compare (list_id, FLI_ENTRY_LIST_ID(x));
+    p = list_id_compare (list_id, metafile_indexes[x]->list_id);
     if (p < 0) {
       r = x;
     } else {
       l = x;
     }
   }
-  if (l >= 0 && list_id_equal (list_id, FLI_ENTRY_LIST_ID (l))) {
-    return l;
+  if (l >= 0 && list_id_equal (list_id, metafile_indexes[l]->list_id)) {
+    return metafile_indexes[l]->idx;
   } else {
     return -1;
   }
@@ -2523,6 +2579,20 @@ static list_t DummyList = {
   .o_tree_sub = {NIL, NIL, NIL, NIL, NIL, NIL, NIL, NIL},
   .g_tree_sub = {NILX, NILX, NILX, NILX, NILX, NILX, NILX, NILX}
 };
+
+static list_t *create_dummy_list(list_id_t list_id, int metafile_index) {
+    list_t *res = zzmalloc(list_struct_size);
+    COPY_LIST_ID (res->list_id, list_id);
+    res->metafile_index = metafile_index;
+    res->o_tree = NILL;
+    res->g_tree = NILX;
+    int i;
+    for (i = 0; i < SUBCATS; i++) {
+      res->o_tree_sub[i] = NIL;
+      res->g_tree_sub[i] = NILX;
+    }
+    return res;
+}
 
 static list_t *__get_list_f (list_id_t list_id, int force) {
   int i = conv_list_id (list_id), k, metafile_index;
@@ -4703,7 +4773,7 @@ int entry_exists (list_id_t list_id, object_id_t object_id) {
   }
 
   int temp_id;
-  tree_ext_large_t *T = listree_lookup_large (&OTree, object_id, &temp_id);
+  tree_ext_large_t *T = listree_lookup_large_tree (&OTree, object_id, &temp_id);
 
   return T ? 1 : 0;
 }
@@ -6730,67 +6800,88 @@ int write_metafile (list_t *L) {
   return 1;
 }
 
-int traverse_all_lists (int (*process_one_list)(list_t *L)) {
-  list_t **LPtr = LArr, **LEnd = LArr + tot_lists, *L;
-  int i = 0, r = 0;
-  vkprintf (1, "traverse_all_lists: idx_lists = %d, memory_lists = %d\n", idx_lists, tot_lists);
-  while (i < idx_lists && LPtr < LEnd) {
-    L = *LPtr;
-    int c = list_id_compare (FLI_ENTRY_LIST_ID(i), L->list_id);
+/**
+ * Note: function creates {@code LArr}.
+ *
+ * @param LArr1 Array[0 .. idx_lists - 1] Represents lists in snapshots.
+ * @param LArr2 Array[0 .. tot_lists - 1] Represents in-memory cached lists.
+ */
+int traverse_all_lists (list_t **LArr1, int len1, list_t **LArr2, int len2, int (*process_one_list)(list_t *L)) {
+  LArr = zzmalloc (sizeof (void *) * (len1 + len2));
+  list_t *L;
+  int i = 0, j = 0, k = 0, r = 0, rt;
+  vkprintf (1, "traverse_all_lists: idx_lists = %d, memory_lists = %d\n", len1, len2);
+  while (i < len1 && j < len2) {
+    int c = list_id_compare (LArr1[i]->list_id, LArr2[j]->list_id);
     if (c < 0) {
-      COPY_LIST_ID (DummyList.list_id, FLI_ENTRY_LIST_ID(i));
-      DummyList.metafile_index = i;
-      L = &DummyList;
-      i++;
+      L = LArr1[i ++];
     } else if (!c) {
-      LPtr++;
-      assert (L->metafile_index == i || L->metafile_index == -1);
-      i++;
+      L = LArr2[j ++];
+      i ++;
     } else {
-      LPtr++;
+      L = LArr2[j ++];
       assert (L->metafile_index == -1);
     }
-    if (L->o_tree != NILL || L->metafile_index != -1) {
-      r += process_one_list (L);
+    rt = process_one_list(L);
+    r += rt;
+    if (rt) {
+      LArr[k ++] = L;
     }
   }
-  while (i < idx_lists) {
-    COPY_LIST_ID (DummyList.list_id, FLI_ENTRY_LIST_ID(i));
-    DummyList.metafile_index = i;
-    r += process_one_list (&DummyList);
-    i++;
-  }
-  while (LPtr < LEnd) {
-    L = *LPtr++;
-    if (!L) {
-      vkprintf (0, "#%lld of %lld is NULL\n", (long long)(LPtr - LArr), (long long)(LEnd - LArr));
+  while (i < len1) {
+    L = LArr1[i ++];
+    rt = process_one_list(L);
+    r += rt;
+    if (rt) {
+      LArr[k ++] = L;
     }
-    assert (L);
+  }
+  while (j < len2) {
+    L = LArr2[j ++];
+    assert (L && L->metafile_index == -1);
     if (L->metafile_index != -1) {
       vkprintf (0, "L->metafile_index = %d, index_lists = %d, list_id = " idout "\n", L->metafile_index, idx_lists, out_list_id (L->list_id));
     }
-    assert (L && L->metafile_index == -1);
-    //fprintf (stderr, "%d %p %p\n", __LINE__, L, LPtr);
-    if (L && L->o_tree != NILL) {
-      r += process_one_list (L);
+    assert (L->metafile_index == -1);
+    rt = process_one_list(L);
+    r += rt;
+    if (rt) {
+      LArr[k ++] = L;
     }
   }
-  vkprintf (1, "traverse_all_list end: result = %d, memory_lists = %d\n", r, tot_lists);
+  vkprintf (1, "traverse_all_list end: result = %d\n", r);
   return r;
 }
 
-void lsort (list_t **A, int b) {
+static int lsort_cmp_by_id(list_t *a, list_t *b) {
+    return list_id_less (a->list_id, b->list_id);
+}
+
+static inline int max(int a, int b){
+    return a > b ? a : b;
+}
+
+static int get_tree_date(tree_ext_large_t *t) {
+    if (t == NILL) return 0;
+    return max(t->payload.date, max(get_tree_date(t->left), get_tree_date(t->right)));
+}
+
+static int lsort_cmp_by_date(list_t *a, list_t *b) {
+    return get_tree_date(a->o_tree) < get_tree_date(b->o_tree);
+}
+
+void lsort (list_t **A, int b, int (*cmp)(list_t *a, list_t *b)) {
   if (b <= 0) {
     return;
   }
   int i = 0, j = b;
-  list_id_t h = A[b >> 1]->list_id; 
+  list_t *h = A[b>>1];
   list_t *t;
   do {
-    while (list_id_less (A[i]->list_id, h)) {
+    while (cmp(A[i], h)) {
       i++;
     }
-    while (list_id_less (h, A[j]->list_id)) {
+    while (cmp(h, A[j])) {
       j--;
     }
     if (i <= j) {
@@ -6801,8 +6892,8 @@ void lsort (list_t **A, int b) {
       j--;
     }
   } while (i <= j);
-  lsort (A, j);
-  lsort (A + i, b - i);
+  lsort (A, j, cmp);
+  lsort (A + i, b - i, cmp);
 }
 
 
@@ -7138,27 +7229,42 @@ int write_index (int writing_binlog) {
     do_all_postponed ();
   }
 
-  LArr = zzmalloc (sizeof (void *) * (tot_lists + 1));
-  assert (LArr);
+  // Begin create LArr1
+  list_t **LArr1 = zzmalloc (sizeof (void *) * idx_lists);
+  assert (LArr1);
+  for (i = 0; i < idx_lists; i++) {
+    LArr1[i] = create_dummy_list(FLI_ENTRY_LIST_ID(i), i);
+  }
 
-  list_t **Lptr = LArr;
+  lsort (LArr1, idx_lists - 1, lsort_cmp_by_id);
 
+  for (i = 1; i < idx_lists; i++) {
+    assert (list_id_less (LArr1[i-1]->list_id, LArr1[i]->list_id));
+  }
+  // End create LArr1
+
+
+  // Begin create LArr2
+  list_t **LArr2 = zzmalloc (sizeof (void *) * tot_lists);
+  assert (LArr2);
+  int lenLArr2 = 0;
   for (i = 0; i < lists_prime; i++) {
     if (List[i]) {
-      *Lptr++ = List[i];
+      LArr2[lenLArr2 ++] = List[i];
     }
   }
+  assert (lenLArr2 == tot_lists);
 
-  assert (Lptr == LArr + tot_lists);
-
-  lsort (LArr, Lptr - LArr - 1);
+  lsort (LArr2, tot_lists - 1, lsort_cmp_by_id);
 
   for (i = 1; i < tot_lists; i++) {
-    assert (list_id_less (LArr[i-1]->list_id, LArr[i]->list_id));
+    assert (list_id_less (LArr2[i-1]->list_id, LArr2[i]->list_id));
   }
+  // End create LArr2
 
   init_new_header0();
-  NewHeader.tot_lists = traverse_all_lists (report_one);
+
+  NewHeader.tot_lists = traverse_all_lists (LArr1, idx_lists, LArr2, tot_lists, report_one);
 
   long long list_dir_size = (long long)(NewHeader.tot_lists + 1) * file_list_index_entry_size;
   assert (list_dir_size == (long)list_dir_size && list_dir_size >= 0);
@@ -7182,7 +7288,11 @@ int write_index (int writing_binlog) {
     fprintf (stderr, "writing metafiles\n");
   }
 
-  traverse_all_lists (write_metafile);
+  lsort (LArr, NewHeader.tot_lists - 1, (metafiles_order == 1 ? lsort_cmp_by_date : lsort_cmp_by_id) );
+
+  for (i = 0; i < NewHeader.tot_lists; i++) {
+    write_metafile(LArr[i]);
+  }
 
   assert (metafiles_output == NewHeader.tot_lists);
 
@@ -7286,6 +7396,13 @@ int write_index (int writing_binlog) {
 
   writeout (&NewHeader, sizeof (NewHeader));
 
+  for (i = 0; i < idx_lists; i++) {
+    zzfree(LArr1[i], list_struct_size);
+  }
+  zzfree(LArr1, sizeof (void *) * idx_lists);
+  zzfree(LArr2, sizeof (void *) * tot_lists);
+  zzfree(LArr, sizeof (void *) * NewHeader.tot_lists);
+
   flushout ();
 
   kfs_sws_close (&SWS);
@@ -7373,30 +7490,7 @@ int dump_single_list (list_t *L) {
   return 1;
 }
 
-
-
 int dump_all_lists (int sublist, int dump_rem, int dump_mod) {
-  int i;
-
-  LArr = zzmalloc (sizeof (void *) * (tot_lists + 1));
-  assert (LArr);
-
-  list_t **Lptr = LArr;
-
-  for (i = 0; i < lists_prime; i++) {
-    if (List[i]) {
-      *Lptr++ = List[i];
-    }
-  }
-
-  assert (Lptr == LArr + tot_lists);
-
-  lsort (LArr, Lptr - LArr - 1);
-
-  for (i = 1; i < tot_lists; i++) {
-    assert (list_id_less (LArr[i-1]->list_id, LArr[i]->list_id));
-  }
-
   newidx_fd = 1;
   global_dump_fl = sublist;
   assert ((unsigned) sublist <= 8);
@@ -7408,7 +7502,45 @@ int dump_all_lists (int sublist, int dump_rem, int dump_mod) {
   global_dump_rem = dump_rem;
   global_dump_mod = dump_mod;
 
-  int res = traverse_all_lists (dump_single_list);
+  int i;
+  // Begin create LArr1
+  list_t **LArr1 = zzmalloc (sizeof (void *) * idx_lists);
+  assert (LArr1);
+  for (i = 0; i < idx_lists; i++) {
+    LArr1[i] = create_dummy_list(FLI_ENTRY_LIST_ID(i), i);
+  }
+
+  lsort (LArr1, idx_lists - 1, lsort_cmp_by_id);
+
+  for (i = 1; i < idx_lists; i++) {
+    assert (list_id_less (LArr1[i-1]->list_id, LArr1[i]->list_id));
+  }
+  // End create LArr1
+
+  // Begin create LArr2
+  list_t **LArr2 = zzmalloc (sizeof (void *) * tot_lists);
+  assert (LArr2);
+  int lenLArr2 = 0;
+  for (i = 0; i < lists_prime; i++) {
+    if (List[i]) {
+      LArr2[lenLArr2 ++] = List[i];
+    }
+  }
+  assert (lenLArr2 == tot_lists);
+
+  lsort (LArr2, tot_lists - 1, lsort_cmp_by_id);
+
+  for (i = 1; i < tot_lists; i++) {
+    assert (list_id_less (LArr2[i-1]->list_id, LArr2[i]->list_id));
+  }
+  // End create LArr2
+
+  int res = traverse_all_lists (LArr1, idx_lists, LArr2, tot_lists, dump_single_list);
+
+  for (i = 1; i < res; i++) {
+    assert (list_id_less (LArr[i-1]->list_id, LArr[i]->list_id));
+  }
+
   flushout ();
 
   newidx_fd = -1;
