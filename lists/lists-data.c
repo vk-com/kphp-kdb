@@ -6853,10 +6853,6 @@ int traverse_all_lists (list_t **LArr1, int len1, list_t **LArr2, int len2, int 
   return r;
 }
 
-static int lsort_cmp_by_id(list_t *a, list_t *b) {
-    return list_id_less (a->list_id, b->list_id);
-}
-
 static inline int max(int a, int b){
     return a > b ? a : b;
 }
@@ -6866,22 +6862,42 @@ static int get_tree_date(tree_ext_large_t *t) {
     return max(t->payload.date, max(get_tree_date(t->left), get_tree_date(t->right)));
 }
 
-static int lsort_cmp_by_date(list_t *a, list_t *b) {
-    return get_tree_date(a->o_tree) < get_tree_date(b->o_tree);
+int get_list_date (list_id_t list_id) {
+  if (metafile_mode && prepare_list_metafile (list_id, -1) < 0) {
+    return 0;
+  }
+  
+  list_t *L = __get_list_f (list_id, 2);
+  if (!L) {
+    return 0;
+  }
+  
+  unpack_metafile_pointers (L);
+  
+  if (SMALL_NODE(*(OTree.root)) != NIL) {
+        return get_tree_date(*(OTree.root));
+  }
+  
+  int res = 0, i, len;
+  for (i = 0, len = OTree.N; i < len; i++) {
+    res = max(res, metafile_get_date (i));
+  }
+  
+  return res;
 }
 
-void lsort (list_t **A, int b, int (*cmp)(list_t *a, list_t *b)) {
+void lsort (list_t **A, int b) {
   if (b <= 0) {
     return;
   }
   int i = 0, j = b;
-  list_t *h = A[b>>1];
+  list_id_t h = A[b >> 1]->list_id; 
   list_t *t;
   do {
-    while (cmp(A[i], h)) {
+    while (list_id_less (A[i]->list_id, h)) {
       i++;
     }
-    while (cmp(h, A[j])) {
+    while (list_id_less (h, A[j]->list_id)) {
       j--;
     }
     if (i <= j) {
@@ -6892,8 +6908,8 @@ void lsort (list_t **A, int b, int (*cmp)(list_t *a, list_t *b)) {
       j--;
     }
   } while (i <= j);
-  lsort (A, j, cmp);
-  lsort (A + i, b - i, cmp);
+  lsort (A, j);
+  lsort (A + i, b - i);
 }
 
 
@@ -7203,6 +7219,38 @@ void do_all_postponed (void) {
   }
 }
 
+
+struct metafile_date {
+  int idx;
+  int date;
+};
+
+void mfd_sort (struct metafile_date **A, int b) {
+  if (b <= 0) {
+    return;
+  }
+  int i = 0, j = b;
+  int h = A[b >> 1]->date;
+  struct metafile_date *t;
+  do {
+    while (A[i]->date < h) {
+      i++;
+    }
+    while (h < A[j]->date) {
+      j--;
+    }
+    if (i <= j) {
+      t = A[i];
+      A[i] = A[j];
+      A[j] = t;
+      i++;
+      j--;
+    }
+  } while (i <= j);
+  mfd_sort (A, j);
+  mfd_sort (A + i, b - i);
+}
+
 int write_index (int writing_binlog) {
   if (metafile_mode & 2) {
     metafile_mode = 4;
@@ -7236,7 +7284,7 @@ int write_index (int writing_binlog) {
     LArr1[i] = create_dummy_list(FLI_ENTRY_LIST_ID(i), i);
   }
 
-  lsort (LArr1, idx_lists - 1, lsort_cmp_by_id);
+  lsort (LArr1, idx_lists - 1);
 
   for (i = 1; i < idx_lists; i++) {
     assert (list_id_less (LArr1[i-1]->list_id, LArr1[i]->list_id));
@@ -7255,7 +7303,7 @@ int write_index (int writing_binlog) {
   }
   assert (lenLArr2 == tot_lists);
 
-  lsort (LArr2, tot_lists - 1, lsort_cmp_by_id);
+  lsort (LArr2, tot_lists - 1);
 
   for (i = 1; i < tot_lists; i++) {
     assert (list_id_less (LArr2[i-1]->list_id, LArr2[i]->list_id));
@@ -7288,10 +7336,31 @@ int write_index (int writing_binlog) {
     fprintf (stderr, "writing metafiles\n");
   }
 
-  lsort (LArr, NewHeader.tot_lists - 1, (metafiles_order == 1 ? lsort_cmp_by_date : lsort_cmp_by_id) );
+  if (metafiles_order == 1) {
+    struct metafile_date **metafile_dates = zzmalloc(sizeof (void *) * NewHeader.tot_lists);
+    int metafile_date_size = sizeof(struct metafile_date);
+    
+    for(i = 0; i < NewHeader.tot_lists; i++) {
+        metafile_dates[i] = zzmalloc(metafile_date_size);
+        metafile_dates[i]->idx = i;
+        metafile_dates[i]->date = get_list_date(LArr[i]->list_id);
+    }
+    
+    mfd_sort(metafile_dates, NewHeader.tot_lists - 1);
 
-  for (i = 0; i < NewHeader.tot_lists; i++) {
-    write_metafile(LArr[i]);
+    for (i = 0; i < NewHeader.tot_lists; i++) {
+      write_metafile(LArr[metafile_dates[i]->idx]);
+      zzfree (metafile_dates[i], metafile_date_size);
+    }
+    
+    zzfree (metafile_dates, sizeof (void *) * NewHeader.tot_lists);
+  }
+  else{
+    lsort (LArr, NewHeader.tot_lists - 1);
+
+    for (i = 0; i < NewHeader.tot_lists; i++) {
+      write_metafile(LArr[i]);
+    }
   }
 
   assert (metafiles_output == NewHeader.tot_lists);
@@ -7510,7 +7579,7 @@ int dump_all_lists (int sublist, int dump_rem, int dump_mod) {
     LArr1[i] = create_dummy_list(FLI_ENTRY_LIST_ID(i), i);
   }
 
-  lsort (LArr1, idx_lists - 1, lsort_cmp_by_id);
+  lsort (LArr1, idx_lists - 1);
 
   for (i = 1; i < idx_lists; i++) {
     assert (list_id_less (LArr1[i-1]->list_id, LArr1[i]->list_id));
@@ -7528,7 +7597,7 @@ int dump_all_lists (int sublist, int dump_rem, int dump_mod) {
   }
   assert (lenLArr2 == tot_lists);
 
-  lsort (LArr2, tot_lists - 1, lsort_cmp_by_id);
+  lsort (LArr2, tot_lists - 1);
 
   for (i = 1; i < tot_lists; i++) {
     assert (list_id_less (LArr2[i-1]->list_id, LArr2[i]->list_id));
