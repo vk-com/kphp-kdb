@@ -59,12 +59,19 @@ int debug_error;
 
 enum {t_int = 0, t_long = 1, t_double = 2, t_string = 3};
 
-int std_t[FN + 4]     = {     0,      0,     0,                 1,    0, 0, 1, 2, 3};
-char *field_names[FN] = {"time", "type", "uid", "some_long_field", NULL};
+//int std_t[FN + 4]     = {     0,      0,     0,                 1,    0, 0, 1, 2, 3}; // default
+//char *field_names[FN] = {"time", "type", "uid", "some_long_field", NULL};
 
-#define common_fields 2
-char *common_field_names[common_fields] = {"ip_lo", "ip_hi"};
-int   common_field_types[common_fields] = { t_long,  t_long};
+int std_t[FN + 4]     = {     0,      0,    1,    0, 0, 1, 2, 3};
+char *field_names[FN] = {"time", "type", "id", NULL};
+
+#define common_fields 0
+char *common_field_names[common_fields] = {};
+int   common_field_types[common_fields] = {};
+
+//#define common_fields 2 // default
+//char *common_field_names[common_fields] = {"ip_lo", "ip_hi"};
+//int   common_field_types[common_fields] = { t_long,  t_long};
 //two first always must be time and type
 
 void debug (char const *msg, ...) {
@@ -840,7 +847,7 @@ char *create_type_buf (char *buff, int text_len) {
       j++;
     }
     if (!desc[j]) {
-      return dl_pstr ("Can't parse type_description ¹%d (':' between field_name and field_type not found)", fn + 1);
+      return dl_pstr ("Can't parse type_description ï¿½%d (':' between field_name and field_type not found)", fn + 1);
     }
 
     int k = j + 1;
@@ -883,7 +890,7 @@ char *create_type_buf (char *buff, int text_len) {
   for (i = 0; i < fn; i++) {
     for (j = i + 1; j < fn; j++) {
       if (strcmp (fnames[i], fnames[j]) == 0) {
-        return dl_pstr ("The same field_name [%s] used for fields ¹%d and ¹%d.", fnames[i], i, j);
+        return dl_pstr ("The same field_name [%s] used for fields ï¿½%d and ï¿½%d.", fnames[i], i, j);
       }
     }
   }

@@ -34,7 +34,8 @@
 
 #define	LOGS_SCHEMA_V1	0x21090101
 
-#define FN 5
+//#define FN 5 //default
+#define FN 4
 #define LEV_LOGS_ADD_EVENT 0x7be18da3
 
 #define LEV_LOGS_CREATE_TYPE 0x182f3a28
