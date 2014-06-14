@@ -86,7 +86,7 @@ $MC_Lists = new Memcache ('127.0.0.1', 11200);
 $MC_Lists->add ("entry98_239", "1,0");
 $MC_Lists->add ("entry98_666", "2,66666");
 $MC_Lists->add ("entry226_77", "7,4");
-var_dump ($MC_Lists->get ("list98");
+var_dump ($MC_Lists->get ("list98"));
 </pre>
 
 Либо даже через telnet:
