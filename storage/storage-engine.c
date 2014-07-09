@@ -97,6 +97,7 @@ static long long one_pix_transparent_errors, too_many_aio_connections_errors;
 static double binlog_load_time = 0.0, index_load_time = 0.0, aio_query_timeout_value = 2.9;
 static double booting_time = 0.0, scandir_time = 0.0, reoder_binlog_files_time = 0.0, append_to_binlog_time = 0.0, binlog_index_loading_time = 0.0, open_replicas_time = 0.0;
 static int index_mode = 0;
+static int attachment = 0;
 static long long index_volume_id = 0;
 static int cs_id = 0;
 static int fsync_step_delay = 5;
@@ -736,6 +737,27 @@ static int http_x_accel_redirect (struct connection *c, const char *filename, lo
   return 0;
 }
 
+static int http_x_accel_redirect_attachment (struct connection *c, const char *filename, long long offset, char base64url_secret[12], int content_type) {
+  static char location[512] =
+    "Content-Disposition: attachment\r\n"
+    "X-Accel-Redirect: ";
+  int r = snprintf (location + 18 + 33, 271, "%s:%llx:%s:%x\r\n", filename, offset, base64url_secret, content_type);
+  if (r >= 271) {
+    vkprintf (1, "location buffer overflow\n");
+    return -500;
+  }
+  write_basic_http_header (c, 307, 0, -1, location, ContentTypes[content_type]);
+  x_accel_redirects++;
+  return 0;
+}
+
+int strpos(char *haystack, char *needle) {
+   char *p = strstr(haystack, needle);
+   if (p)
+      return p - haystack;
+   return -1;
+}
+
 int hts_execute (struct connection *c, int op);
 int hts_wakeup (struct connection *c);
 struct http_server_functions http_methods = {
@@ -905,6 +927,12 @@ int hts_execute (struct connection *c, int op) {
   int r = -239;
   long long volume_id;
   int filesize = -1;
+  int dl = -1;
+
+  if(attachment){
+    dl = strpos(qUri, "dl=1");
+  }
+
   char base64url_secret[12];
   if (md5_mode) {
     if (sscanf (qUri, "/v%lld/%31[0-9A-Za-z_-]/%11[0-9A-Za-z_-].%3s", &volume_id, base64url_md5, base64url_secret, ext) != 4 || base64url_to_secret (base64url_secret, &secret)) {
@@ -960,6 +988,10 @@ int hts_execute (struct connection *c, int op) {
     if (B == NULL) {
       return -400;
     }
+    if(dl != -1){
+        return http_x_accel_redirect_attachment (c, B->abs_filename, offset, base64url_secret, content_type);
+    }
+
     return http_x_accel_redirect (c, B->abs_filename, offset, base64url_secret, content_type);
   } else {
     metafile_t *meta;
@@ -977,6 +1009,11 @@ int hts_execute (struct connection *c, int op) {
     } else if (r == STORAGE_ERR_TOO_MANY_AIO_CONNECTIONS) {
       assert (B);
       too_many_aio_connections_errors++;
+
+      if(dl != -1) {
+        return http_x_accel_redirect_attachment (c, B->abs_filename, offset, base64url_secret, content_type);
+      }
+
       return http_x_accel_redirect (c, B->abs_filename, offset, base64url_secret, content_type);
     } else {
       metafiles_cache_hits++;
@@ -2057,6 +2094,7 @@ void usage (void) {
 	  "\t-I<volume_id>\tsingle volume index mode\n"
 	  "\t-v\toutput statistical and debug information into stderr\n"
 	  "\t-r\tread-only binlog (don't log new events)\n"
+	  "\t-a\tenable attachment file ([?|&]dl=1)\n"
     "\t-R<filesize>\tsets max_immediately_reply_filesize, could be end by 'k', 'm', etc. (default: %d)\n"
     "\t-M<max_metafiles_size>\tcould be end by 'k', 'm', etc. (default: %d)\n"
     "\t-Z<max_zmalloc_memory>\tcould be end by 'k', 'm', etc. (default: %d)\n"
@@ -2099,7 +2137,7 @@ int main (int argc, char *argv[]) {
   char *prefix = NULL;
   progname = strrchr (argv[0], '/');
   progname = (progname == NULL) ? argv[0] : progname + 1;
-  while ((i = getopt (argc, argv, "A:C:E:FH:I:L:M:R:T:V:Z:b:c:dg:hil:n:p:ru:v")) != -1) {
+  while ((i = getopt (argc, argv, "A:C:E:FH:I:L:M:R:T:V:Z:b:c:dg:hil:n:p:ru:v:a")) != -1) {
     switch (i) {
       case 'A':
         max_aio_connections_per_disk = atoi (optarg);
@@ -2194,6 +2232,9 @@ int main (int argc, char *argv[]) {
         return 2;
       case 'i':
         index_mode = 1;
+        break;
+      case 'a':
+        attachment = 1;
         break;
       case 'l':
         logname = optarg;
