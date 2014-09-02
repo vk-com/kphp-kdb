@@ -3521,7 +3521,7 @@ int main_args_default_handler (int i) {
   return 1;
 }
 
-#define ARGS_STR "D:E:H:r:w:f:p:s:T:t:oq"
+#define ARGS_STR "D:E:H:r:w:f:p:s:T:t:A:oq"
 
 void usage_params (void) {
   printf ("[-H<port>] [-r<rpc_port>] [-w<host>:<port>] [-q] [f<workers_n>] [-D<key>=<value>] [-o] [-p<master_port>] [-s<cluster_name>] [-T<tl_config_file_name>] [-t<script_time_limit>]");
@@ -3540,11 +3540,25 @@ void usage_desc (void) {
     "\t-s<cluster_name>\tused to distinguish clusters\n"
     "\t-T<tl_config_file_name>\tname of file with TL config\n"
     "\t-t<script_time_limit>\ttime limit for script in seconds\n"
+    "\t-A<db_user:db_pass@db_name>\tconfig for mysql access\n"
     );
 }
 
 int main_args_handler (int i) {
   switch (i) {
+  case 'A':
+    {
+      char *line = strdup(optarg);
+      char *user_pass = strtok(line, "@");
+      char *database = strtok(NULL, "@");
+      char *user = strtok(user_pass, ":");
+      char *pass = strtok(NULL, ":");
+
+      sql_username = user;
+      sql_password = pass;
+      sql_database = database;
+    }
+  break;
   case 'D':
     {
       char *key = optarg, *value;
