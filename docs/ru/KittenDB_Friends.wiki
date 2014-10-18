@@ -131,7 +131,7 @@ $MC_Friends->increment($key,$value);
 Возвращает значение приватности в виде [[KittenDB_Friends_Privacy.wiki#Описание приватности|строки]], не обязательно той же самой, что была использована при создании или редактировании приватности, но [[KittenDB_Friends_Privacy.wiki#Канонический вид|эквивалентной]] ей. Если указанный пользователь или приватность не определены, возвращает <code>false</code>.
 
 === Удаление приватности ===
-<code>delete("privacy{$id}_{$priv_key}");
+<code>delete("privacy{$id}_{$priv_key}");</code>
 
 === Проверка приватности ===
 <code>get("{$user_id}~{$owner_id}:{$privacy_key}")</code>
