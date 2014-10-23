@@ -10,13 +10,13 @@
 
 location ~ "^/im(.*)$" {
 	proxy_set_header X-Real-IP $remote_addr;
-	proxy_pass http://localhost:3311;
+	proxy_pass http://localhost:8888;
 }
 
 location "/q_frame.php" {
 	proxy_redirect off;
 	proxy_set_header X-Real-IP $remote_addr;
-	proxy_pass http://localhost:8888;
+	proxy_pass http://localhost:8080;
 }
 
 и в fastcgi_params добавить
