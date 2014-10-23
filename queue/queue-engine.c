@@ -1897,11 +1897,13 @@ void start_server (void) {
     exit (1);
   }
 
-  default_ct.target = *(struct in_addr *) h->h_addr;
-  default_ct.port = watchcat_port;
-  watchcat_conn = create_target (&default_ct, 0);
+  if(watchcat_port!=0){
+    default_ct.target = *(struct in_addr *) h->h_addr;
+    default_ct.port = watchcat_port;
+    watchcat_conn = create_target (&default_ct, 0);
+  }
 
-  if (!use_rpc) {
+  if (!use_rpc && news_port!=0) {
     default_ct.target = *(struct in_addr *) h->h_addr;
     default_ct.port = news_port;
     news_conn = create_target (&default_ct, 0);
@@ -2034,8 +2036,8 @@ int main (int argc, char *argv[]) {
   parse_option ("total-engines", required_argument, NULL, 'e', "<total_engines> total number of engines");
   parse_option ("http-port", required_argument, 0, 'H', "<port> http port number (default %d)", http_port);
   parse_option ("memory-limit", required_argument, NULL, 'm', "<memory-limit> sets maximal size of used memory not including zmemory for struct conn_query in mebibytes");
-  parse_option ("news-port", required_argument, 0, 'N', "<port> port number for communication with other queue-engines in cluster when not using rpc (default %d)", news_port);
-  parse_option ("watchcat-port", required_argument, 0, 'P', "<port> port number for communication with watchcats (default %d)", watchcat_port);
+  parse_option ("news-port", required_argument, 0, 'N', "<port> port number for communication with other queue-engines in cluster when not using rpc (default %d). 0 - disabled.", news_port);
+  parse_option ("watchcat-port", required_argument, 0, 'P', "<port> port number for communication with watchcats (default %d). 0 - disabled.", watchcat_port);
   parse_option ("engine-number", required_argument, NULL, 'q', "<engine_number> number of this engine");
   parse_option ("lock-memory", no_argument, NULL, 'k', "lock paged memory");
   parse_option ("stemmer", no_argument, 0, 'S', "enable stemmer");
@@ -2061,9 +2063,9 @@ int main (int argc, char *argv[]) {
   prepare_watchcat_str ("    aaaa   aaa   aaa   aaaaa   ", 1);
   prepare_watchcat_str ("###abc###", 1);
   prepare_watchcat_str ("#a a #b b ##c#d", 1);
-  prepare_watchcat_str ("интересно работает ли русский", 1);
-  prepare_watchcat_str ("интересно интересный #интересно", 1);
-  prepare_watchcat_str ("#test #Test Test #интересный интересный", 1);
+  prepare_watchcat_str ("пїЅпїЅпїЅпїЅпїЅпїЅпїЅпїЅпїЅ пїЅпїЅпїЅпїЅпїЅпїЅпїЅпїЅ пїЅпїЅ пїЅпїЅпїЅпїЅпїЅпїЅпїЅ", 1);
+  prepare_watchcat_str ("пїЅпїЅпїЅпїЅпїЅпїЅпїЅпїЅпїЅ пїЅпїЅпїЅпїЅпїЅпїЅпїЅпїЅпїЅпїЅ #пїЅпїЅпїЅпїЅпїЅпїЅпїЅпїЅпїЅ", 1);
+  prepare_watchcat_str ("#test #Test Test #пїЅпїЅпїЅпїЅпїЅпїЅпїЅпїЅпїЅпїЅ пїЅпїЅпїЅпїЅпїЅпїЅпїЅпїЅпїЅпїЅ", 1);
   return 0;
 */
 
