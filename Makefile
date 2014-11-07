@@ -60,7 +60,7 @@ PROJECTS = binlog cache common copyexec db-proxy friend kfs \
 		lists mc-proxy money monitor msg-search net news \
 		search statsx targ text util crypto \
 		memcached pmemcached hints bayes isearch logs magus mutual-friends \
-		drinkless queue watchcat image filesys random storage weights dns dhcp \
+		drinkless queue poll watchcat image filesys random storage weights dns dhcp \
 		skat antispam KPHP KPHP/compiler KPHP/runtime \
 		spell letters photo copyfast support geoip \
 		TL vv rpc-proxy vkext seqmap
@@ -96,7 +96,7 @@ EXELIST	:= \
 	${EXE}/mf-engine ${EXE}/mf-process-file \
 	${EXE}/isearch-engine ${EXE}/isearch-x-engine ${EXE}/isearch-interests-engine \
 	${EXE}/logs-engine ${EXE}/logs-merge-dumps ${EXE}/logs-merge-stats \
-	${EXE}/lists-binlog ${EXE}/queue-engine ${EXE}/watchcat-engine \
+	${EXE}/lists-binlog ${EXE}/queue-engine ${EXE}/poll-engine ${EXE}/watchcat-engine \
 	${EXE}/magus-precalc ${EXE}/magus-engine \
 	${EXE}/search-engine ${EXE}/search-index ${EXE}/search-binlog ${EXE}/search-y-engine ${EXE}/search-y-index \
 	${EXE}/search-x-index ${EXE}/search-x-engine \
@@ -188,6 +188,7 @@ OBJECTS	=	\
     ${OBJ}/pmemcached/pmemcached-index-disk.o ${OBJ}/pmemcached/pmemcached-index-ram.o ${OBJ}/pmemcached/pmemcached-import-dump.o \
     ${OBJ}/pmemcached/pmemcached-log-split.o \
     ${OBJ}/queue/queue-data.o ${OBJ}/queue/queue-engine.o ${OBJ}/queue/utils.o \
+    ${OBJ}/poll/poll-data.o ${OBJ}/poll/poll-engine.o ${OBJ}/poll/utils.o \
     ${OBJ}/search/search-binlog.o ${OBJ}/search/search-data.o ${OBJ}/search/search-engine.o \
     ${OBJ}/search/search-index.o ${OBJ}/search/search-index-layout.o ${OBJ}/search/utils.o ${OBJ}/search/search-value-buffer.o \
     ${OBJ}/search/search-x-data.o ${OBJ}/search/search-x-engine.o ${OBJ}/search/search-common.o ${OBJ}/search/search-profile.o \
@@ -583,6 +584,9 @@ ${EXE}/logs-merge-stats:	${OBJ}/logs/logs-merge-stats.o ${DLSTD} ${SRVOBJS}
 	${CC} -o $@ $^ ${LDFLAGS}
 
 ${EXE}/queue-engine:	${OBJ}/queue/queue-engine.o ${OBJ}/queue/queue-data.o ${OBJ}/queue/utils.o ${OBJ}/watchcat/utils.o ${OBJ}/common/search-y-parse.o ${OBJ}/common/word-split.o ${OBJ}/common/stemmer-new.o ${OBJ}/common/utf8_utils.o ${OBJ}/net/net-connections.o ${OBJ}/net/net-memcache-server.o ${DLDEF} ${OBJ}/net/net-http-server.o ${OBJ}/net/net-memcache-client.o ${OBJ}/net/net-rpc-server.o ${OBJ}/net/net-rpc-client.o ${OBJ}/net/net-rpc-common.o ${OBJ}/common/resolver.o ${SRVOBJS}
+	${CC} -o $@ $^ ${LDFLAGS}
+
+${EXE}/poll-engine:	${OBJ}/poll/poll-engine.o ${OBJ}/poll/poll-data.o ${OBJ}/poll/utils.o ${OBJ}/watchcat/utils.o ${OBJ}/common/search-y-parse.o ${OBJ}/common/word-split.o ${OBJ}/common/stemmer-new.o ${OBJ}/common/utf8_utils.o ${OBJ}/net/net-connections.o ${OBJ}/net/net-memcache-server.o ${DLDEF} ${OBJ}/net/net-http-server.o ${OBJ}/net/net-memcache-client.o ${OBJ}/net/net-rpc-server.o ${OBJ}/net/net-rpc-client.o ${OBJ}/net/net-rpc-common.o ${OBJ}/common/resolver.o ${SRVOBJS}
 	${CC} -o $@ $^ ${LDFLAGS}
 
 ${EXE}/watchcat-engine:	${OBJ}/watchcat/watchcat-engine.o ${OBJ}/watchcat/watchcat-data.o ${OBJ}/watchcat/utils.o ${OBJ}/common/search-y-parse.o ${OBJ}/common/word-split.o ${OBJ}/common/stemmer-new.o ${OBJ}/common/utf8_utils.o ${OBJ}/net/net-connections.o ${OBJ}/net/net-aio.o ${OBJ}/net/net-memcache-server.o ${OBJ}/net/net-memcache-client.o ${DLDEF} ${SRVOBJS}
