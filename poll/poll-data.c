@@ -77,8 +77,7 @@ long events_memory, keys_memory, subscribers_memory, subscribers_cnt, str_memory
      time_keys_memory;
 int events_cnt, keys_cnt, treap_cnt, treap_cnt_rev, queues_cnt;
 
-long long send_create_watchcat,
-  send_changes_cnt,
+long long send_changes_cnt,
   process_changes_cnt,
   changes_len_max,
   process_changes_total_len,
@@ -90,14 +89,6 @@ long long send_create_watchcat,
   changes_del_rev_len,
   changes_del_cnt,
   changes_del_len,
-  send_news_cnt,
-  redirect_news_twice_cnt,
-  redirect_news_cnt,
-  redirect_news_len,
-  news_subscr_cnt,
-  news_subscr_len,
-  news_subscr_actual_len,
-  news_subscr_missed,
   to_add_overflow,
   to_del_overflow;
 
@@ -143,7 +134,6 @@ int write_str (char *d, char *s, int sn) {
 /***
   QUEUE CODE
  ***/
-ll get_news_s_id (char *s);
 void clear_subscr (queue *q);
 
 shmap_string_vptr h_queue, h_qkey;
@@ -1115,11 +1105,6 @@ void release_key_group (qkey_group *k) {
     }
   }
 }
-
-
-/***
- News
- ***/
 
 int get_queue_alias (char *s, ll *res) {
   if (!check_qname (s, get_qtype (s))) {
