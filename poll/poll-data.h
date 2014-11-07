@@ -36,19 +36,14 @@
 
 #ifdef TEST_MODE
 #  define TTL_EVENT 14
-#  define TTL_NEWS_EVENT 2
 #else
 #  define TTL_EVENT 1
-#  define TTL_NEWS_EVENT 2
 #endif
 
 #define MAX_QNAME 24
 #define RSEED_LEN 7
 #define KEY_LEN (MAX_QNAME + 1 + 8 + 8 + 8 + RSEED_LEN)//{qname}_{ip}{id}{secret}{random}
 #define IS_UID(x) (dl_abs (x) < 2000000000)
-
-#define RPC_NEWS_SUBSCR 0x17da0000
-#define RPC_NEWS_REDIRECT 0x13a10000
 
 extern double max_delay, sum_delay;
 extern long long cnt_delay;
@@ -63,8 +58,7 @@ extern int events_cnt, keys_cnt, treap_cnt, treap_cnt_rev, queues_cnt;
 #define _STR(x) #x
 #define STAT_OUT(x) W( _STR(x) "\t" "%lld" "\n", x);
 
-extern long long send_create_watchcat,
-  send_changes_cnt,
+extern long long send_changes_cnt,
   process_changes_cnt,
   changes_len_max,
   process_changes_total_len,
@@ -76,14 +70,6 @@ extern long long send_create_watchcat,
   changes_del_rev_len,
   changes_del_cnt,
   changes_del_len,
-  send_news_cnt,
-  redirect_news_twice_cnt,
-  redirect_news_cnt,
-  redirect_news_len,
-  news_subscr_cnt,
-  news_subscr_len,
-  news_subscr_actual_len,
-  news_subscr_missed,
   to_add_overflow,
   to_del_overflow;
 
@@ -103,7 +89,7 @@ struct t_event {
   char data[0];
 };
 
-typedef enum {Q_DEF, Q_WATCHCAT, Q_NEWS} qtype;
+typedef enum {Q_DEF} qtype;
 
 typedef struct {
   event *ev_first;
@@ -148,14 +134,9 @@ char *get_events_http (qkey *k);
 char *get_events_http_group (qkey_group *k);
 
 int do_add_event (char *qname, int qname_len, char *data, int data_len, int x, int y, int ttl);
-char *get_watchcat_key (char *qname, int id, int ip, int timeout);
-char *get_news_key (int id, int ip, int timeout, ll uid);
 
 char *get_timestamp_key (char *qname, int id, int ip, int timeout, char *extra, qtype tp);
 int may_wait (char *s);
-void add_event_to_watchcats (ll *ids, int idn, char *event);
-void add_event_to_news (ll from_id, int x, int y, int ttl, pli *ids, int idn, char *event, int need_debug);
-void redirect_news (ll id, int x, int y, int ttl, char *text, int text_n);
 
 qkey *validate_key (char *key_name, int id, int ip, int req_ts, int a_release, char *err);
 
@@ -177,12 +158,7 @@ int subscribers_add_new_rev (ll id, pli *a, int n);
 int subscribers_del_old (ll id, pli *a, int n);
 int subscribers_del_rev (ll id, pli *a, int n);
 
-int set_news_subscr (ll id, pli *a, int n);
-int set_news_subscr_add (ll id, pli *a, int n);
-int set_news_subscr_del (ll id, ll *a, int n);
-
 int get_queue_alias (char *s, ll *res);
-int get_queue_news_alias (ll id, ll *res);
 queue *get_queue_by_alias (ll id);
 queue *get_queue (char *name, int force);
 
