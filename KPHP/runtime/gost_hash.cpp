@@ -2,7 +2,7 @@
 #include <string.h>
 #include <stdint.h>
 
-#include "gost_hash.hpp"
+#include "gost_hash.h"
 namespace {
 uint_fast32_t sub(const uint_fast32_t sbox[4][256], uint_fast32_t x)
 {

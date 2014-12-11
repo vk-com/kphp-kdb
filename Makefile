@@ -132,7 +132,7 @@ RPC_PROXY_OBJS	=	${OBJ}/rpc-proxy/rpc-proxy-merge.o ${OBJ}/rpc-proxy/rpc-proxy-m
 DLSTD		=	${OBJ}/drinkless/dl-utils.o ${OBJ}/drinkless/dl-crypto.o ${OBJ}/drinkless/dl-aho.o ${OBJ}/drinkless/dl-utils-lite.o ${OBJ}/common/crc32.o
 DLDEF		=	${OBJ}/drinkless/dl-utils.o ${OBJ}/drinkless/dl-crypto.o ${OBJ}/drinkless/dl-aho.o ${OBJ}/drinkless/dl-utils-lite.o ${OBJ}/drinkless/dl-perm.o ${OBJ}/common/crc32.o
 SKATOBJS	=	${OBJ}/skat/st-utils.o ${OBJ}/skat/st-hash.o ${OBJ}/skat/st-hash-set.o ${OBJ}/skat/st-memtest.o ${OBJ}/skat/st-numeric.o
-KPHPOBJS	=	${OBJ}/KPHP/runtime/allocator.o ${OBJ}/KPHP/runtime/array_functions.o ${OBJ}/KPHP/runtime/bcmath.o ${OBJ}/KPHP/runtime/datetime.o ${OBJ}/KPHP/runtime/drivers.o ${OBJ}/KPHP/runtime/exception.o ${OBJ}/KPHP/runtime/files.o ${OBJ}/KPHP/runtime/interface.o ${OBJ}/KPHP/runtime/math_functions.o ${OBJ}/KPHP/runtime/mbstring.o ${OBJ}/KPHP/runtime/misc.o ${OBJ}/KPHP/runtime/openssl.o ${OBJ}/KPHP/runtime/regexp.o ${OBJ}/KPHP/runtime/rpc.o ${OBJ}/KPHP/runtime/string_functions.o ${OBJ}/KPHP/runtime/url.o ${OBJ}/KPHP/runtime/zlib.o
+KPHPOBJS	=	${OBJ}/KPHP/runtime/allocator.o ${OBJ}/KPHP/runtime/array_functions.o ${OBJ}/KPHP/runtime/bcmath.o ${OBJ}/KPHP/runtime/datetime.o ${OBJ}/KPHP/runtime/drivers.o ${OBJ}/KPHP/runtime/exception.o ${OBJ}/KPHP/runtime/files.o ${OBJ}/KPHP/runtime/interface.o ${OBJ}/KPHP/runtime/math_functions.o ${OBJ}/KPHP/runtime/mbstring.o ${OBJ}/KPHP/runtime/misc.o ${OBJ}/KPHP/runtime/openssl.o ${OBJ}/KPHP/runtime/regexp.o ${OBJ}/KPHP/runtime/rpc.o ${OBJ}/KPHP/runtime/string_functions.o ${OBJ}/KPHP/runtime/url.o ${OBJ}/KPHP/runtime/zlib.o ${OBJ}/KPHP/runtime/gost_hash.o
 KPHP2CPPOBJS = ${OBJ}/KPHP/kphp2cpp.o ${OBJ}/KPHP/compiler/bicycle.o ${OBJ}/KPHP/compiler/cfg.o ${OBJ}/KPHP/compiler/compiler.o ${OBJ}/KPHP/compiler/data.o ${OBJ}/KPHP/compiler/gentree.o ${OBJ}/KPHP/compiler/io.o ${OBJ}/KPHP/compiler/lexer.o ${OBJ}/KPHP/compiler/name-gen.o ${OBJ}/KPHP/compiler/operation.o ${OBJ}/KPHP/compiler/stage.o ${OBJ}/KPHP/compiler/token.o ${OBJ}/KPHP/compiler/types.o ${OBJ}/KPHP/compiler/vertex.o ${OBJ}/KPHP/compiler/type-inferer.o ${OBJ}/KPHP/compiler/type-inferer-core.o ${OBJ}/KPHP/compiler/compiler-core.o ${OBJ}/KPHP/compiler/pass-rl.o ${OBJ}/KPHP/compiler/pass-ub.o
 
 OBJECTS_CXX	= \
@@ -140,7 +140,7 @@ OBJECTS_CXX	= \
     ${OBJ}/KPHP/runtime/drivers.o ${OBJ}/KPHP/runtime/exception.o ${OBJ}/KPHP/runtime/files.o ${OBJ}/KPHP/runtime/interface.o \
     ${OBJ}/KPHP/runtime/math_functions.o ${OBJ}/KPHP/runtime/mbstring.o ${OBJ}/KPHP/runtime/misc.o ${OBJ}/KPHP/runtime/openssl.o \
     ${OBJ}/KPHP/runtime/regexp.o ${OBJ}/KPHP/runtime/rpc.o ${OBJ}/KPHP/runtime/string_functions.o ${OBJ}/KPHP/runtime/url.o \
-    ${OBJ}/KPHP/runtime/zlib.o \
+    ${OBJ}/KPHP/runtime/zlib.o ${OBJ}/KPHP/runtime/gost_hash.o \
     ${OBJ}/KPHP/php-runner.o ${OBJ}/KPHP/php-queries.o ${OBJ}/KPHP/php_script.o ${OBJ}/KPHP/php-master.o\
     ${KPHP2CPPOBJS}
 

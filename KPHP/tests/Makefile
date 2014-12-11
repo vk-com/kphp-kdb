@@ -83,7 +83,7 @@ ${KPHP_OBJ}/script.o: ${SUBDIR_OBJS} | create_dirs
 ${EXE}/engine: ${SUBDIR_OBJS} ${KPHP_ENGINE_OBJ} | create_dirs
 	${CXX} -o $@ $^ ${LDFLAGS}
 
-${EXE}/main: $(KPHP_OBJ)/kphp/xmain.o ${KPHP_OBJ}/script.o ${OBJ}/KPHP/runtime/allocator.o ${OBJ}/KPHP/runtime/array_functions.o ${OBJ}/KPHP/runtime/bcmath.o ${OBJ}/KPHP/runtime/datetime.o ${OBJ}/KPHP/runtime/drivers.o ${OBJ}/KPHP/runtime/exception.o ${OBJ}/KPHP/runtime/files.o ${OBJ}/KPHP/runtime/interface.o ${OBJ}/KPHP/runtime/math_functions.o ${OBJ}/KPHP/runtime/mbstring.o ${OBJ}/KPHP/runtime/misc.o ${OBJ}/KPHP/runtime/openssl.o ${OBJ}/KPHP/runtime/regexp.o ${OBJ}/KPHP/runtime/rpc.o ${OBJ}/KPHP/runtime/string_functions.o ${OBJ}/KPHP/runtime/url.o ${OBJ}/KPHP/runtime/zlib.o ${OBJ}/KPHP/php_script.o ${OBJ}/drinkless/dl-utils-lite.o ${SRVOBJS} | create_dirs
+${EXE}/main: $(KPHP_OBJ)/kphp/xmain.o ${KPHP_OBJ}/script.o ${OBJ}/KPHP/runtime/allocator.o ${OBJ}/KPHP/runtime/array_functions.o ${OBJ}/KPHP/runtime/bcmath.o ${OBJ}/KPHP/runtime/datetime.o ${OBJ}/KPHP/runtime/drivers.o ${OBJ}/KPHP/runtime/exception.o ${OBJ}/KPHP/runtime/files.o ${OBJ}/KPHP/runtime/interface.o ${OBJ}/KPHP/runtime/math_functions.o ${OBJ}/KPHP/runtime/mbstring.o ${OBJ}/KPHP/runtime/misc.o ${OBJ}/KPHP/runtime/openssl.o ${OBJ}/KPHP/runtime/regexp.o ${OBJ}/KPHP/runtime/rpc.o ${OBJ}/KPHP/runtime/string_functions.o ${OBJ}/KPHP/runtime/url.o ${OBJ}/KPHP/runtime/zlib.o ${OBJ}/KPHP/runtime/gost_hash.o ${OBJ}/KPHP/php_script.o ${OBJ}/drinkless/dl-utils-lite.o ${SRVOBJS} | create_dirs
 	${CXX} -o $@ $^ ${LDFLAGS}
 
 

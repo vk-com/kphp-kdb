@@ -41,7 +41,7 @@
 #include "files.h"
 #include "string_functions.h"
 
-#include "gost_hash.cpp"
+#include "gost_hash.h"
 
 array <string> f$hash_algos (void) {
   return array <string> (

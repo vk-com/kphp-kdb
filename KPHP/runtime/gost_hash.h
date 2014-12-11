@@ -1,3 +1,4 @@
+#include <stdint.h>
 #pragma once
 
 namespace Hash {
