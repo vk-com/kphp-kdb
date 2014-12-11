@@ -1967,7 +1967,7 @@ void start_server (void) {
 
 
 void usage (void) {
-  printf ("usage: %s [options] <index-file>\n"
+  printf ("usage: %s [options]\n"
     "\t" VERSION_STR " compiled at " __DATE__ " " __TIME__ " by gcc " __VERSION__ " "
 #ifdef __LP64__
     "64-bit"
