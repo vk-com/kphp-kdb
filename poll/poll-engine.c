@@ -1149,73 +1149,6 @@ static void syntax (const char *msg) {
   exit(2);
 }
 
-
-/*
- *
- *  MEMCACHED CLIENT
- *
- *
- */
-
-
-int proxy_client_execute (struct connection *c, int op);
-
-struct memcache_client_functions mc_proxy_outbound = {
-  .execute = proxy_client_execute,
-  .check_ready = server_check_ready,
-
-  .flush_query = mcc_flush_query,
-  .mc_check_perm = mcc_default_check_perm,
-  .mc_init_crypto = mcc_init_crypto,
-  .mc_start_crypto = mcc_start_crypto
-};
-
-
-struct conn_target default_ct = {
-.min_connections = 1,
-.max_connections = 1,
-.type = &ct_memcache_client,
-.extra = &mc_proxy_outbound,
-.reconnect_timeout = 1
-};
-
-struct in_addr settings_addr;
-
-int send_to (struct conn_target *S, char *query, int query_len, int force) {
-  struct connection *d = get_target_connection (S);
-  if (d == NULL) {
-    if (verbosity > 0) {
-      fprintf (stderr, "cannot find connection to target %s:%d for query %s, dropping query\n", S ? conv_addr (S->target.s_addr, 0) : "?", S ? S->port : 0, query);
-    }
-    return -1;
-  }
-  if (verbosity > 1) {
-    fprintf (stderr, "send query '%s'\n", query);
-  }
-  assert (write_out (&d->Out, query, query_len) == query_len);
-
-  sent_queries++;
-
-  if (force) {
-    MCC_FUNC (d)->flush_query (d);
-  }
-  d->last_query_sent_time = precise_now;
-  return 0;
-}
-
-
-int proxy_client_execute (struct connection *c, int op) {
-  struct mcc_data *D = MCC_DATA(c);
-
-  if (verbosity > 0) {
-    fprintf (stderr, "proxy_mc_client: op=%d, key_len=%d, arg#=%d, response_len=%d\n", op, D->key_len, D->arg_num, D->response_len);
-  }
-
-  c->last_response_time = precise_now;
-  return SKIP_ALL_BYTES;
-}
-
-
 void reopen_logs (void) {
   int fd;
   fflush (stdout);
@@ -1392,7 +1325,7 @@ void start_server (void) {
 
 
 void usage (void) {
-  printf ("usage: %s [options] <index-file>\n"
+  printf ("usage: %s [options]\n"
     "\t" VERSION_STR " compiled at " __DATE__ " " __TIME__ " by gcc " __VERSION__ " "
 #ifdef __LP64__
     "64-bit"
@@ -1456,7 +1389,7 @@ int main (int argc, char *argv[]) {
   parse_option ("stemmer", no_argument, 0, 'S', "enable stemmer");
 
   parse_engine_options_long (argc, argv, queue_parse_option);
-  if (argc != optind + 1) {
+  if (argc != optind) {
     usage();
     return 2;
   }
@@ -1469,7 +1402,7 @@ int main (int argc, char *argv[]) {
     stem_init();
   }
 
-  dynamic_data_buffer_size = (1 << 26);//26 for struct conn_query
+  dynamic_data_buffer_size = (1 << 26); //26 for struct conn_query
   init_dyn_data();
 
   if (!username && maxconn == MAX_CONNECTIONS && geteuid()) {

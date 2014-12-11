@@ -2043,7 +2043,7 @@ int main (int argc, char *argv[]) {
   parse_option ("stemmer", no_argument, 0, 'S', "enable stemmer");
 
   parse_engine_options_long (argc, argv, queue_parse_option);
-  if (argc != optind + 1) {
+  if (argc != optind) {
     usage();
     return 2;
   }
