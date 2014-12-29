@@ -613,7 +613,7 @@ typename array <T>::key_type f$array_rand (const array <T> &a) {
 template <class T>
 var f$array_rand (const array <T> &a, int num) {
   if (num == 1) {
-    return f$array_rand (a, 1);
+    return f$array_rand (a);
   }
 
   int size = a.count();
