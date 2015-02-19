@@ -98,7 +98,6 @@ static double binlog_load_time = 0.0, index_load_time = 0.0, aio_query_timeout_v
 static double booting_time = 0.0, scandir_time = 0.0, reoder_binlog_files_time = 0.0, append_to_binlog_time = 0.0, binlog_index_loading_time = 0.0, open_replicas_time = 0.0;
 static int index_mode = 0;
 static int attachment = 0;
-static int setsizes = 0;
 static long long index_volume_id = 0;
 static int cs_id = 0;
 static int fsync_step_delay = 5;
@@ -110,9 +109,6 @@ volatile int force_write_index;
 
 #define STATS_BUFF_SIZE	(16 << 10)
 #define VALUE_BUFF_SIZE	(1 << 16)
-#define MAX_WIDTH 1000
-#define MAX_HEIGHT 1000
-
 static char stats_buff[STATS_BUFF_SIZE];
 static char value_buff[VALUE_BUFF_SIZE];
 
@@ -729,34 +725,37 @@ static int http_wait (struct connection *c, struct aio_connection *WaitAio) {
   return 0;
 }
 
-
-static int http_x_accel_redirect (struct connection *c, const char *filename, long long offset, char base64url_secret[12], int content_type, int download, int size_w, int size_h) {
-  static char location[512];
-  int r = snprintf (location, 512, "X-Accel-Redirect: %s:%llx:%s:%x", filename, offset, base64url_secret, content_type);
-  if(setsizes){
-    if(size_w <= 0){
-      r = snprintf(location + strlen(location), 512 - strlen(location), ":-");
-    } else {
-      r = snprintf(location + strlen(location), 512 - strlen(location), ":%d", size_w);
-    }
-    if(size_h <= 0){
-      r = snprintf(location + strlen(location), 512 - strlen(location), ":-");
-    } else {
-      r = snprintf(location + strlen(location), 512 - strlen(location), ":%d", size_h);
-    }
-  }
-  r = snprintf(location + strlen(location), 512 - strlen(location), "\r\n");
-  if(download == 1){
-    r = snprintf(location + strlen(location), 512 - strlen(location), "Content-Disposition: attachment\r\n");
-  }
-
-  if (r >= 512) {
+static int http_x_accel_redirect (struct connection *c, const char *filename, long long offset, char base64url_secret[12], int content_type) {
+  static char location[256] = "X-Accel-Redirect: ";
+  int r = snprintf (location + 18, 238, "%s:%llx:%s:%x\r\n", filename, offset, base64url_secret, content_type);
+  if (r >= 238) {
     vkprintf (1, "location buffer overflow\n");
     return -500;
   }
   write_basic_http_header (c, 307, 0, -1, location, ContentTypes[content_type]);
   x_accel_redirects++;
   return 0;
+}
+
+static int http_x_accel_redirect_attachment (struct connection *c, const char *filename, long long offset, char base64url_secret[12], int content_type) {
+  static char location[512] =
+    "Content-Disposition: attachment\r\n"
+    "X-Accel-Redirect: ";
+  int r = snprintf (location + 18 + 33, 271, "%s:%llx:%s:%x\r\n", filename, offset, base64url_secret, content_type);
+  if (r >= 271) {
+    vkprintf (1, "location buffer overflow\n");
+    return -500;
+  }
+  write_basic_http_header (c, 307, 0, -1, location, ContentTypes[content_type]);
+  x_accel_redirects++;
+  return 0;
+}
+
+int strpos(char *haystack, char *needle) {
+   char *p = strstr(haystack, needle);
+   if (p)
+      return p - haystack;
+   return -1;
 }
 
 int hts_execute (struct connection *c, int op);
@@ -769,8 +768,8 @@ struct http_server_functions http_methods = {
 
 #define	MAX_POST_SIZE	4096
 
-static char *qUri, *qHeaders, *qGet;
-static int qUriLen, qHeadersLen, qGetLen;
+static char *qUri, *qHeaders;
+static int qUriLen, qHeadersLen;
 
 static int http_try_x_accel_redirect (struct connection *c, metafile_t *meta, long long secret, int content_type, int error_code, long long *stat_cnt) {
   if (stat_cnt) {
@@ -791,7 +790,7 @@ static int http_try_x_accel_redirect (struct connection *c, metafile_t *meta, lo
   char base64url_secret[12];
   int r = base64url_encode ((unsigned char *) &secret, 8, base64url_secret, 12);
   assert (!r);
-  return http_x_accel_redirect (c, B->abs_filename, offset, base64url_secret, content_type, 0, 0, 0);
+  return http_x_accel_redirect (c, B->abs_filename, offset, base64url_secret, content_type);
 }
 
 long long redirect_retries_meta_aio, redirect_retries_corrupted, redirect_retries_secret, redirect_retries_type,
@@ -881,55 +880,9 @@ int http_error_one_pix_transparent (struct connection *c) {
   return 0;
 }
 
-
-int getArgFrom (char *buffer, int b_len, const char *arg_name, char *where, int where_len) {
-  char *where_end = where + where_len;
-  int arg_len = strlen (arg_name);
-  while (where < where_end) {
-    char *start = where;
-    while (where < where_end && (*where != '=' && *where != '&')) {
-      ++where;
-    }
-    if (where == where_end) {
-      buffer[0] = 0;
-      return -1;
-    }
-    if (*where == '=') {
-      if (arg_len == where - start && !memcmp (arg_name, start, arg_len)) {
-        start = ++where;
-        while (where < where_end && *where != '&') {
-          ++where;
-        }
-        b_len--;
-        if (where - start < b_len) {
-          b_len = where - start;
-        }
-        memcpy (buffer, start, b_len);
-        buffer[b_len] = 0;
-        return b_len;
-      }
-      ++where;
-    }
-    while (where < where_end && *where != '&') {
-      ++where;
-    }
-    if (where < where_end) {
-      ++where;
-    }
-  }
-  buffer[0] = 0;
-  return -1;
-}
-
-int getArg (char *buffer, int b_len, const char *arg_name) {
-  int res = getArgFrom (buffer, b_len, arg_name, qGet, qGetLen);
-  return res;
-}
-
 int hts_execute (struct connection *c, int op) {
   struct hts_data *D = HTS_DATA(c);
   static char ReqHdr[MAX_HTTP_HEADER_SIZE];
-  static char tmp_buff[MAX_POST_SIZE];
 
   vkprintf (1, "in hts_execute: connection #%d, op=%d, header_size=%d, data_size=%d, http_version=%d\n",
 	     c->fd, op, D->header_size, D->data_size, D->http_ver);
@@ -974,41 +927,10 @@ int hts_execute (struct connection *c, int op) {
   int r = -239;
   long long volume_id;
   int filesize = -1;
-  int dl = 0;
-  int size_w = 0;
-  int size_h = 0;
-
-  char *get_qm_ptr = memchr (qUri, '?', qUriLen);
-  if (get_qm_ptr) {
-    qGet = get_qm_ptr + 1;
-    qGetLen = qUri + qUriLen - qGet;
-    qUriLen = get_qm_ptr - qUri;
-  } else {
-    qGet = 0;
-    qGetLen = 0;
-  }
+  int dl = -1;
 
   if(attachment){
-    dl = getArg (tmp_buff, sizeof (tmp_buff), "dl");
-  }
-
-  if(setsizes){
-    if(getArg (tmp_buff, sizeof (tmp_buff), "width") > 0){
-      size_w = atoi(tmp_buff);
-      if(size_w < 0){
-        size_w = 0;
-      } else if(size_w > MAX_WIDTH){
-        size_w = MAX_WIDTH;
-      }
-    }
-    if(getArg (tmp_buff, sizeof (tmp_buff), "height") > 0){
-      size_h = atoi(tmp_buff);
-      if(size_h < 0){
-        size_h = 0;
-      } else if(size_h > MAX_HEIGHT){
-        size_h = MAX_HEIGHT;
-      }
-    }
+    dl = strpos(qUri, "dl=1");
   }
 
   char base64url_secret[12];
@@ -1066,8 +988,11 @@ int hts_execute (struct connection *c, int op) {
     if (B == NULL) {
       return -400;
     }
+    if(dl != -1){
+        return http_x_accel_redirect_attachment (c, B->abs_filename, offset, base64url_secret, content_type);
+    }
 
-    return http_x_accel_redirect (c, B->abs_filename, offset, base64url_secret, content_type, dl, size_w, size_h);
+    return http_x_accel_redirect (c, B->abs_filename, offset, base64url_secret, content_type);
   } else {
     metafile_t *meta;
     r = metafile_load (P, &meta, &B, volume_id, local_id, filesize, offset);
@@ -1085,7 +1010,11 @@ int hts_execute (struct connection *c, int op) {
       assert (B);
       too_many_aio_connections_errors++;
 
-      return http_x_accel_redirect (c, B->abs_filename, offset, base64url_secret, content_type, dl, size_w, size_h);
+      if(dl != -1) {
+        return http_x_accel_redirect_attachment (c, B->abs_filename, offset, base64url_secret, content_type);
+      }
+
+      return http_x_accel_redirect (c, B->abs_filename, offset, base64url_secret, content_type);
     } else {
       metafiles_cache_hits++;
       return http_return_file (c, meta, secret, content_type);
@@ -2166,8 +2095,6 @@ void usage (void) {
 	  "\t-v\toutput statistical and debug information into stderr\n"
 	  "\t-r\tread-only binlog (don't log new events)\n"
 	  "\t-a\tenable attachment file ([?|&]dl=1)\n"
-	  "\t-s\tenable set sizes (defiult: max_width=%d, max_height=%d)\n"
-	  "\t\t\tnginx rule \"^/[A-Za-z0-9_./]+:[a-f0-9]{1,16}:[A-Za-z0-9_-]{11}:[a-f0-9]{1,8}:([0-9-]{1,3}):([0-9-]{1,3})$\"\n"
     "\t-R<filesize>\tsets max_immediately_reply_filesize, could be end by 'k', 'm', etc. (default: %d)\n"
     "\t-M<max_metafiles_size>\tcould be end by 'k', 'm', etc. (default: %d)\n"
     "\t-Z<max_zmalloc_memory>\tcould be end by 'k', 'm', etc. (default: %d)\n"
@@ -2186,8 +2113,6 @@ void usage (void) {
     "\t\t\t\t(volume_id = cs * 1000 + log_split_min)\n",
 	  progname,
     FullVersionStr,
-    MAX_WIDTH,
-    MAX_HEIGHT,
     max_immediately_reply_filesize,
     max_metafiles_bytes, max_zmalloc_bytes, aio_query_timeout_value, required_volumes_at_startup, bad_image_cache_max_living_time, choose_binlog_options);
   exit (2);
@@ -2212,7 +2137,7 @@ int main (int argc, char *argv[]) {
   char *prefix = NULL;
   progname = strrchr (argv[0], '/');
   progname = (progname == NULL) ? argv[0] : progname + 1;
-  while ((i = getopt (argc, argv, "A:C:E:FH:I:L:M:R:T:V:Z:b:c:dg:hil:n:p:ru:s::va")) != -1) {
+  while ((i = getopt (argc, argv, "A:C:E:FH:I:L:M:R:T:V:Z:b:c:dg:hil:n:p:ru:v:a")) != -1) {
     switch (i) {
       case 'A':
         max_aio_connections_per_disk = atoi (optarg);
@@ -2311,9 +2236,6 @@ int main (int argc, char *argv[]) {
       case 'a':
         attachment = 1;
         break;
-      case 's':
-	setsizes = 1;
-      break;
       case 'l':
         logname = optarg;
         break;
