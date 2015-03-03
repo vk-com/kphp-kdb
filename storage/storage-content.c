@@ -50,7 +50,7 @@ int detect_content_type (const unsigned char *const buff, int size) {
         if (a[0] == 0x14000000 && a[1] == 0x70797466 && a[2] == 0x20207471) {
           return ct_mov;
         }
-        if (!(a[0] & 0x00ffffff) && a[1] == 0x70797466 && (a[2] & 0x00ffffff) == 0x0034706d) {
+        if (!(a[0] & 0x00ffffff) && a[1] == 0x70797466 && (a[2] & 0x00ffffff) == 0x006f7369) { // 0x0034706d
           return ct_mp4;
         }
       }
