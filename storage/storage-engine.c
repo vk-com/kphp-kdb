@@ -733,7 +733,7 @@ static int http_wait (struct connection *c, struct aio_connection *WaitAio) {
 static int http_x_accel_redirect (struct connection *c, const char *filename, long long offset, char base64url_secret[12], int content_type, int download, int size_w, int size_h) {
   static char location[512];
   int r = snprintf (location, 512, "X-Accel-Redirect: %s:%llx:%s:%x", filename, offset, base64url_secret, content_type);
-  if(setsizes){
+  if(setsizes && (content_type == 0 || content_type == 1 || content_type == 2)){
     if(size_w <= 0){
       r = snprintf(location + strlen(location), 512 - strlen(location), ":-");
     } else {
