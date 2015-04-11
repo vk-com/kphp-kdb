@@ -60,7 +60,7 @@
 #define COMMIT "unknown"
 #endif
 
-#define	VERSION_STR	"storage-engine-0.13-r36"
+#define	VERSION_STR	"storage-engine-0.14-r36"
 const char FullVersionStr[] = VERSION_STR " compiled at " __DATE__ " " __TIME__ " by gcc " __VERSION__ " "
 #ifdef __LP64__
   "64-bit"
@@ -97,21 +97,23 @@ static long long one_pix_transparent_errors, too_many_aio_connections_errors;
 static double binlog_load_time = 0.0, index_load_time = 0.0, aio_query_timeout_value = 2.9;
 static double booting_time = 0.0, scandir_time = 0.0, reoder_binlog_files_time = 0.0, append_to_binlog_time = 0.0, binlog_index_loading_time = 0.0, open_replicas_time = 0.0;
 static int index_mode = 0;
-static int attachment = 0;
-static int setsizes = 0;
 static long long index_volume_id = 0;
 static int cs_id = 0;
 static int fsync_step_delay = 5;
 static int max_zmalloc_bytes = 32 << 20;
 static double connect_timeout = 3.0;
 
+typedef enum { IF_OFF, IF_TEST, IF_SIZE, IF_ROTATE, IF_RESIZE, IF_CROP} image_filter_type;
+static char *image_filter_cmd[] = {"off", "test", "size", "rotate", "resize", "crop"};
+static int default_filter = IF_OFF;
+static int nginx_filter_image = 0;
+static int attachment = 0;
+
 volatile int force_interrupt;
 volatile int force_write_index;
 
 #define STATS_BUFF_SIZE	(16 << 10)
 #define VALUE_BUFF_SIZE	(1 << 16)
-#define MAX_WIDTH 1000
-#define MAX_HEIGHT 1000
 
 static char stats_buff[STATS_BUFF_SIZE];
 static char value_buff[VALUE_BUFF_SIZE];
@@ -730,10 +732,11 @@ static int http_wait (struct connection *c, struct aio_connection *WaitAio) {
 }
 
 
-static int http_x_accel_redirect (struct connection *c, const char *filename, long long offset, char base64url_secret[12], int content_type, int download, int size_w, int size_h) {
+static int http_x_accel_redirect (struct connection *c, const char *filename, long long offset, char base64url_secret[12], int content_type, int download, int size_w, int size_h, int rotate, image_filter_type image_filter) {
   static char location[512];
   int r = snprintf (location, 512, "X-Accel-Redirect: %s:%llx:%s:%x", filename, offset, base64url_secret, content_type);
-  if(setsizes && (content_type == 0 || content_type == 1 || content_type == 2)){
+  if(nginx_filter_image && (content_type == 0 || content_type == 1 || content_type == 2) && image_filter != IF_OFF){
+    r = snprintf(location + strlen(location), 512 - strlen(location), ":%s", image_filter_cmd[image_filter]);
     if(size_w <= 0){
       r = snprintf(location + strlen(location), 512 - strlen(location), ":-");
     } else {
@@ -744,6 +747,7 @@ static int http_x_accel_redirect (struct connection *c, const char *filename, lo
     } else {
       r = snprintf(location + strlen(location), 512 - strlen(location), ":%d", size_h);
     }
+    r = snprintf(location + strlen(location), 512 - strlen(location), ":%d", rotate);
   }
   r = snprintf(location + strlen(location), 512 - strlen(location), "\r\n");
   if(download == 1){
@@ -791,7 +795,7 @@ static int http_try_x_accel_redirect (struct connection *c, metafile_t *meta, lo
   char base64url_secret[12];
   int r = base64url_encode ((unsigned char *) &secret, 8, base64url_secret, 12);
   assert (!r);
-  return http_x_accel_redirect (c, B->abs_filename, offset, base64url_secret, content_type, 0, 0, 0);
+  return http_x_accel_redirect (c, B->abs_filename, offset, base64url_secret, content_type, 0, 0, 0, 0, 0);
 }
 
 long long redirect_retries_meta_aio, redirect_retries_corrupted, redirect_retries_secret, redirect_retries_type,
@@ -926,6 +930,7 @@ int getArg (char *buffer, int b_len, const char *arg_name) {
   return res;
 }
 
+
 int hts_execute (struct connection *c, int op) {
   struct hts_data *D = HTS_DATA(c);
   static char ReqHdr[MAX_HTTP_HEADER_SIZE];
@@ -977,6 +982,8 @@ int hts_execute (struct connection *c, int op) {
   int dl = 0;
   int size_w = 0;
   int size_h = 0;
+  int rotate = 0;
+  image_filter_type image_filter = default_filter;
 
   char *get_qm_ptr = memchr (qUri, '?', qUriLen);
   if (get_qm_ptr) {
@@ -992,22 +999,52 @@ int hts_execute (struct connection *c, int op) {
     dl = getArg (tmp_buff, sizeof (tmp_buff), "dl");
   }
 
-  if(setsizes){
+  if(nginx_filter_image){
+    if(getArg (tmp_buff, sizeof (tmp_buff), "filter") > 0){
+      switch(tmp_buff[0]){
+        case 'o':
+          image_filter = IF_OFF;
+        break;
+        case 't':
+          image_filter = IF_TEST;
+        break;
+        case 's':
+          image_filter = IF_SIZE;
+        break;
+        case 'c':
+          image_filter = IF_CROP;
+        break;
+        case 'r':
+          if(tmp_buff[1] == 'o') 
+            image_filter = IF_ROTATE;
+          else
+            image_filter = IF_RESIZE;
+        break;
+        default:
+          image_filter = default_filter;
+        break;
+      }
+    }
     if(getArg (tmp_buff, sizeof (tmp_buff), "width") > 0){
       size_w = atoi(tmp_buff);
       if(size_w < 0){
         size_w = 0;
-      } else if(size_w > MAX_WIDTH){
-        size_w = MAX_WIDTH;
       }
     }
     if(getArg (tmp_buff, sizeof (tmp_buff), "height") > 0){
       size_h = atoi(tmp_buff);
       if(size_h < 0){
         size_h = 0;
-      } else if(size_h > MAX_HEIGHT){
-        size_h = MAX_HEIGHT;
       }
+    }
+    if(getArg (tmp_buff, sizeof (tmp_buff), "rotate") > 0){
+      rotate = atoi(tmp_buff);
+      if(rotate != 90 && rotate != 180 && rotate != 270){
+        image_filter = IF_OFF;
+      }
+    }
+    if(image_filter == IF_ROTATE && rotate != 90 && rotate != 180 && rotate != 270){
+     image_filter = IF_OFF;
     }
   }
 
@@ -1067,7 +1104,7 @@ int hts_execute (struct connection *c, int op) {
       return -400;
     }
 
-    return http_x_accel_redirect (c, B->abs_filename, offset, base64url_secret, content_type, dl, size_w, size_h);
+    return http_x_accel_redirect (c, B->abs_filename, offset, base64url_secret, content_type, dl, size_w, size_h, rotate, image_filter);
   } else {
     metafile_t *meta;
     r = metafile_load (P, &meta, &B, volume_id, local_id, filesize, offset);
@@ -1085,7 +1122,7 @@ int hts_execute (struct connection *c, int op) {
       assert (B);
       too_many_aio_connections_errors++;
 
-      return http_x_accel_redirect (c, B->abs_filename, offset, base64url_secret, content_type, dl, size_w, size_h);
+      return http_x_accel_redirect (c, B->abs_filename, offset, base64url_secret, content_type, dl, size_w, size_h, rotate, image_filter);
     } else {
       metafiles_cache_hits++;
       return http_return_file (c, meta, secret, content_type);
@@ -2166,8 +2203,13 @@ void usage (void) {
 	  "\t-v\toutput statistical and debug information into stderr\n"
 	  "\t-r\tread-only binlog (don't log new events)\n"
 	  "\t-a\tenable attachment file ([?|&]dl=1)\n"
-	  "\t-s\tenable set sizes (defiult: max_width=%d, max_height=%d)\n"
-	  "\t\t\tnginx rule \"^/[A-Za-z0-9_./]+:[a-f0-9]{1,16}:[A-Za-z0-9_-]{11}:[a-f0-9]{1,8}:([0-9-]{1,3}):([0-9-]{1,3})$\"\n"
+	  "\t-s<default_filter>\tenable support nginx_image_filter (default: %s)\n"
+	  "\t\t\t%d - %s\n"
+	  "\t\t\t%d - %s\n"
+	  "\t\t\t%d - %s\n"
+	  "\t\t\t%d - %s\n"
+	  "\t\t\t%d - %s\n"
+	  "\t\t\t%d - %s\n"
     "\t-R<filesize>\tsets max_immediately_reply_filesize, could be end by 'k', 'm', etc. (default: %d)\n"
     "\t-M<max_metafiles_size>\tcould be end by 'k', 'm', etc. (default: %d)\n"
     "\t-Z<max_zmalloc_memory>\tcould be end by 'k', 'm', etc. (default: %d)\n"
@@ -2186,8 +2228,13 @@ void usage (void) {
     "\t\t\t\t(volume_id = cs * 1000 + log_split_min)\n",
 	  progname,
     FullVersionStr,
-    MAX_WIDTH,
-    MAX_HEIGHT,
+    image_filter_cmd[default_filter],
+    IF_OFF, image_filter_cmd[IF_OFF],
+    IF_TEST, image_filter_cmd[IF_TEST],
+    IF_SIZE, image_filter_cmd[IF_SIZE],
+    IF_ROTATE, image_filter_cmd[IF_ROTATE],
+    IF_RESIZE, image_filter_cmd[IF_RESIZE],
+    IF_CROP, image_filter_cmd[IF_CROP],
     max_immediately_reply_filesize,
     max_metafiles_bytes, max_zmalloc_bytes, aio_query_timeout_value, required_volumes_at_startup, bad_image_cache_max_living_time, choose_binlog_options);
   exit (2);
@@ -2212,7 +2259,7 @@ int main (int argc, char *argv[]) {
   char *prefix = NULL;
   progname = strrchr (argv[0], '/');
   progname = (progname == NULL) ? argv[0] : progname + 1;
-  while ((i = getopt (argc, argv, "A:C:E:FH:I:L:M:R:T:V:Z:b:c:dg:hil:n:p:ru:s::va")) != -1) {
+  while ((i = getopt (argc, argv, "A:C:E:FH:I:L:M:R:T:V:Z:b:c:dg:hil:n:p:ru:as:v")) != -1) {
     switch (i) {
       case 'A':
         max_aio_connections_per_disk = atoi (optarg);
@@ -2308,12 +2355,6 @@ int main (int argc, char *argv[]) {
       case 'i':
         index_mode = 1;
         break;
-      case 'a':
-        attachment = 1;
-        break;
-      case 's':
-	setsizes = 1;
-      break;
       case 'l':
         logname = optarg;
         break;
@@ -2329,6 +2370,16 @@ int main (int argc, char *argv[]) {
       case 'u':
         username = optarg;
         break;
+      case 'a':
+        attachment = 1;
+        break;
+      case 's':
+        nginx_filter_image = 1;
+        int tmp = atoi (optarg);
+        if(tmp >= 0 || tmp <= 5){
+          default_filter = tmp;
+        }
+      break;
       case 'v':
         verbosity++;
         break;
