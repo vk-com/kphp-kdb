@@ -29,7 +29,6 @@ rm run-tests.php
 rm vkext.la
 rm vkext.lo
 rm vkext_flex.lo
-rm vkext_flex_auto.c
 rm vkext_iconv.lo
 rm vkext_json.lo
 rm vkext_rpc.lo
