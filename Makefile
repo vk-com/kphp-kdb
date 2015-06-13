@@ -108,6 +108,8 @@ EXELIST	:= \
 	${EXE}/storage-engine ${EXE}/storage-import ${EXE}/storage-append ${EXE}/storage-binlog-check ${EXE}/storage-binlog \
 	${EXE}/letters-engine \
 	${EXE}/photo-engine ${EXE}/photo-import-dump ${EXE}/photo-log-split \
+	${EXE}/audio-engine ${EXE}/audio-import-dump ${EXE}/audio-log-split \
+	${EXE}/video-engine ${EXE}/video-import-dump ${EXE}/video-log-split \
 	${EXE}/copyfast-server ${EXE}/copyfast-engine \
 	${EXE}/copyexec-commit ${EXE}/copyexec-engine ${EXE}/copyexec-binlog ${EXE}/copyexec-results-engine \
 	${EXE}/tlc-new ${EXE}/icplc \
@@ -675,6 +677,20 @@ ${EXE}/photo-engine:	${OBJ}/photo/photo-engine.o ${OBJ}/photo/photo-data.o ${OBJ
 ${EXE}/photo-import-dump:	${OBJ}/photo/photo-import-dump.o ${OBJ}/photo/photo-data.o ${OBJ}/photo/utils.o ${OBJ}/photo/dl.o ${OBJ}/common/base64.o ${OBJ}/net/net-aio.o ${OBJ}/net/net-connections.o ${DLDEF} ${SRVOBJS} ${TL_ENGINE_OBJS}
 	${CC} -o $@ $^ ${LDFLAGS}
 ${EXE}/photo-log-split:	${OBJ}/photo/photo-log-split.o ${OBJ}/common/server-functions.o ${KFSOBJS} ${OBJ}/binlog/kdb-binlog-common.o ${OBJ}/common/base64.o ${OBJ}/common/crc32.o ${OBJ}/common/md5.o
+	${CC} -o $@ $^ ${LDFLAGS}
+
+${EXE}/audio-engine:	${OBJ}/photo/photo-engine.o ${OBJ}/photo/photo-data.o ${OBJ}/photo/utils.o ${OBJ}/photo/dl.o ${OBJ}/common/base64.o ${OBJ}/net/net-connections.o ${OBJ}/net/net-aio.o ${OBJ}/net/net-memcache-server.o ${DLDEF} ${SRVOBJS} ${TL_ENGINE_OBJS}
+	${CC} -o $@ $^ ${LDFLAGS}
+${EXE}/audio-import-dump:	${OBJ}/photo/photo-import-dump.o ${OBJ}/photo/photo-data.o ${OBJ}/photo/utils.o ${OBJ}/photo/dl.o ${OBJ}/common/base64.o ${OBJ}/net/net-aio.o ${OBJ}/net/net-connections.o ${DLDEF} ${SRVOBJS} ${TL_ENGINE_OBJS}
+	${CC} -o $@ $^ ${LDFLAGS}
+${EXE}/audio-log-split:	${OBJ}/photo/photo-log-split.o ${OBJ}/common/server-functions.o ${KFSOBJS} ${OBJ}/binlog/kdb-binlog-common.o ${OBJ}/common/base64.o ${OBJ}/common/crc32.o ${OBJ}/common/md5.o
+	${CC} -o $@ $^ ${LDFLAGS}
+
+${EXE}/video-engine:	${OBJ}/photo/photo-engine.o ${OBJ}/photo/photo-data.o ${OBJ}/photo/utils.o ${OBJ}/photo/dl.o ${OBJ}/common/base64.o ${OBJ}/net/net-connections.o ${OBJ}/net/net-aio.o ${OBJ}/net/net-memcache-server.o ${DLDEF} ${SRVOBJS} ${TL_ENGINE_OBJS}
+	${CC} -o $@ $^ ${LDFLAGS}
+${EXE}/video-import-dump:	${OBJ}/photo/photo-import-dump.o ${OBJ}/photo/photo-data.o ${OBJ}/photo/utils.o ${OBJ}/photo/dl.o ${OBJ}/common/base64.o ${OBJ}/net/net-aio.o ${OBJ}/net/net-connections.o ${DLDEF} ${SRVOBJS} ${TL_ENGINE_OBJS}
+	${CC} -o $@ $^ ${LDFLAGS}
+${EXE}/video-log-split:	${OBJ}/photo/photo-log-split.o ${OBJ}/common/server-functions.o ${KFSOBJS} ${OBJ}/binlog/kdb-binlog-common.o ${OBJ}/common/base64.o ${OBJ}/common/crc32.o ${OBJ}/common/md5.o
 	${CC} -o $@ $^ ${LDFLAGS}
 
 ${EXE}/truncate:	${OBJ}/util/truncate.o
