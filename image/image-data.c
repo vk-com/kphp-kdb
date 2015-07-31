@@ -1360,7 +1360,8 @@ static void *forth_resize_borderless (void **IP, struct forth_stack *st) {
   if (crop) {
     Image *w = gm_crop_image (st, r, &rect);
     DestroyImage (r);
-    if (w != NULL) {
+//    if (w != NULL) {
+    if (w == NULL) {
       st->top = old_stack_top;
       return failf (st, "%s: gm_crop_image fail", __func__);
     }
