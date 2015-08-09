@@ -109,6 +109,11 @@ static int default_filter = IF_OFF;
 static int nginx_filter_image = 0;
 static int attachment = 0;
 
+char *cup_path = NULL;
+unsigned char *cup_image;
+int cup_size = 0;
+
+
 volatile int force_interrupt;
 volatile int force_write_index;
 
@@ -873,6 +878,11 @@ static inline int base64url_to_secret (const char *input, unsigned long long *se
 
 int http_error_one_pix_transparent (struct connection *c) {
   one_pix_transparent_errors++;
+  if(cup_size > 0){
+    write_http_doc (c, (void *) cup_image, cup_size, 545774400, ct_png);
+    return 0;
+  }
+
   static const unsigned char one_pix_transparent_png[82] = {
     137, 80, 78, 71, 13, 10, 26, 10, 0, 0, 0, 13, 73, 72, 68, 82,
     0, 0, 0, 1, 0, 0, 0, 1, 8, 4, 0, 0, 0, 181, 28, 12,
@@ -2202,6 +2212,7 @@ void usage (void) {
 	  "\t-I<volume_id>\tsingle volume index mode\n"
 	  "\t-v\toutput statistical and debug information into stderr\n"
 	  "\t-r\tread-only binlog (don't log new events)\n"
+	  "\t-w<image_path>\tset cup image (only png)\n"
 	  "\t-a\tenable attachment file ([?|&]dl=1)\n"
 	  "\t-s<default_filter>\tenable support nginx_image_filter (default: %s)\n"
 	  "\t\t\t%d - %s\n"
@@ -2259,7 +2270,7 @@ int main (int argc, char *argv[]) {
   char *prefix = NULL;
   progname = strrchr (argv[0], '/');
   progname = (progname == NULL) ? argv[0] : progname + 1;
-  while ((i = getopt (argc, argv, "A:C:E:FH:I:L:M:R:T:V:Z:b:c:dg:hil:n:p:ru:as:v")) != -1) {
+  while ((i = getopt (argc, argv, "A:C:E:FH:I:L:M:R:T:V:Z:b:c:dg:hil:n:p:w:ru:as:v")) != -1) {
     switch (i) {
       case 'A':
         max_aio_connections_per_disk = atoi (optarg);
@@ -2364,6 +2375,9 @@ int main (int argc, char *argv[]) {
       case 'p':
         port = atoi(optarg);
         break;
+      case 'w':
+        cup_path = optarg;
+      break;
       case 'r':
         binlog_disabled = 1;
         break;
@@ -2421,6 +2435,40 @@ int main (int argc, char *argv[]) {
   if (change_user_group (username, groupname) < 0) {
     kprintf ("fatal: cannot change user to %s, group to %s\n", username ? username : "(none)", groupname ? groupname : "(none)");
     exit (1);
+  }
+
+  if(cup_path != NULL){
+    FILE *fp;
+    if((fp=fopen(cup_path, "r")) == NULL) {
+      fprintf (stderr, "Erorr: Cup image not load\n");
+      exit(1);
+    }
+
+    fseek(fp , 0 , SEEK_END);
+    long fp_size = ftell(fp);
+    rewind (fp);
+
+    cup_image = (unsigned char*)malloc(sizeof(unsigned char) * (fp_size + 1));
+    if (cup_image == NULL) {
+      fprintf (stderr, "Error: Cup image not load\n");
+      exit(2);
+    }
+
+    size_t result = fread(cup_image, sizeof(char), fp_size, fp);
+
+    if (result != fp_size) {
+      fprintf (stderr, "Error: cannot read cup image\n");
+      exit (3);
+    }
+
+    fclose(fp);
+
+    if(cup_image[0] != 137 && cup_image[1] != 80 && cup_image[2] !=78){
+      fprintf (stderr, "Error: Cup image is not PNG\n");
+      exit(4);
+    }
+
+    cup_size = (int)result;
   }
 
   //dynamic_data_buffer_size = 0x7fffffff - max_metafiles_bytes - 2 * max_immediately_reply_filesize;
