@@ -96,6 +96,7 @@ bool f$get_magic_quotes_gpc (void);
 
 
 string f$php_sapi_name (void);
+OrFalse <array <string> > f$get_interfaces (bool ipv6 = false);
 
 
 extern var v$_SERVER;

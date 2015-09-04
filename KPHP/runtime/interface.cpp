@@ -29,6 +29,11 @@
 
 #include <arpa/inet.h>
 #include <netdb.h>
+#include <stdio.h>
+#include <sys/types.h>
+#include <ifaddrs.h>
+#include <netinet/in.h>
+#include <string.h>
 
 #include "array_functions.h"
 #include "bcmath.h"
@@ -441,6 +446,34 @@ bool f$get_magic_quotes_gpc (void) {
 
 string f$php_sapi_name (void) {
   return string ("Kitten PHP", 10);
+}
+
+OrFalse <array <string> > f$get_interfaces (bool ipv6) {
+    struct ifaddrs * ifAddrStruct=NULL;
+    struct ifaddrs * ifa=NULL;
+    void * tmpAddrPtr=NULL;
+    array <string> result;
+
+    getifaddrs(&ifAddrStruct);
+
+    for (ifa = ifAddrStruct; ifa != NULL; ifa = ifa->ifa_next) {
+        if (!ifa->ifa_addr) {
+            continue;
+        }
+        if (!ipv6 && (ifa->ifa_addr->sa_family == AF_INET)) {
+            tmpAddrPtr=&((struct sockaddr_in *)ifa->ifa_addr)->sin_addr;
+            char addressBuffer[INET_ADDRSTRLEN];
+            inet_ntop(AF_INET, tmpAddrPtr, addressBuffer, INET_ADDRSTRLEN);
+            result.set_value(string(ifa->ifa_name, (dl::size_type)strlen(ifa->ifa_name)), string (addressBuffer, (dl::size_type)strlen (addressBuffer)));
+        } else if (ipv6 && (ifa->ifa_addr->sa_family == AF_INET6)) {
+            tmpAddrPtr=&((struct sockaddr_in6 *)ifa->ifa_addr)->sin6_addr;
+            char addressBuffer[INET6_ADDRSTRLEN];
+            inet_ntop(AF_INET6, tmpAddrPtr, addressBuffer, INET6_ADDRSTRLEN);
+            result.set_value(string(ifa->ifa_name, (dl::size_type)strlen(ifa->ifa_name)), string (addressBuffer, (dl::size_type)strlen (addressBuffer)));
+        }
+    }
+    if (ifAddrStruct!=NULL) freeifaddrs(ifAddrStruct);
+    return result;
 }
 
 

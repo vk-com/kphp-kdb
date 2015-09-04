@@ -323,6 +323,7 @@ function long2ip ($ip) ::: string;
 
 function get_magic_quotes_gpc() ::: bool;
 function php_sapi_name() ::: string;
+function get_interfaces($ipv6 ::: bool = false) ::: OrFalse <array <string> >;
 
 define_raw ('STR_PAD_LEFT', 0);
 define_raw ('STR_PAD_RIGHT', 1);
