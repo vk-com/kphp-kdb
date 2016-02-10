@@ -767,7 +767,7 @@ unsigned get_my_ipv4 (void) {
     return 0;
   }
   for (ifa = ifa_first; ifa; ifa = ifa->ifa_next) {
-    if (ifa->ifa_addr->sa_family != AF_INET) {
+    if (!ifa->ifa_addr || (ifa->ifa_addr->sa_family != AF_INET)) {
       continue;
     }
     if (!strncmp (ifa->ifa_name, "lo", 2)) {
