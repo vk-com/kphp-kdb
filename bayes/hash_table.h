@@ -102,8 +102,8 @@ typedef struct {
 
 void qhtbl_init (qhash_table *ht);
 void qhtbl_set_size (qhash_table *ht, int size);
-inline pair* qhtbl_add (qhash_table *ht, ll h);
-inline pair* qhtbl_get (qhash_table *ht, ll h);
+pair* qhtbl_add (qhash_table *ht, ll h);
+pair* qhtbl_get (qhash_table *ht, ll h);
 void qhtbl_free (qhash_table *ht);
 
 #endif

@@ -150,4 +150,6 @@ int do_black_list_add (const char *s);
 int do_black_list_delete (const char *s);
 int black_list_get (char *buf, int buf_len);
 
+void debugp (char const *msg, ...);
+
 #endif
