@@ -64,4 +64,6 @@ void vct_free (vector *v);
 int vct_back (vector *v);
 void vct_set_add (vector *v, int val);
 
+int stricmp_void (const void *x, const void *y);
+
 #endif
