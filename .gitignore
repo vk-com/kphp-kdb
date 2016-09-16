@@ -14,3 +14,4 @@ nohup.out
 *.err
 *.out
 .idea/
+upload.sh

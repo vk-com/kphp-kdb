@@ -39,9 +39,10 @@ typedef struct  {
 time_amortization_table_t *time_amortization_table_alloc (int T);
 void time_amortization_table_free (time_amortization_table_t **p);
 
-extern inline double time_amortization_table_fast_exp (time_amortization_table_t *self, int dt) {
-  return (dt < AMORTIZATION_TABLE_SQRT_SIZE * AMORTIZATION_TABLE_SQRT_SIZE) ?
-          self->hi_exp[dt >> AMORTIZATION_TABLE_SQRT_SIZE_BITS] * self->lo_exp[dt & AMORTIZATION_TABLE_SQRT_SIZE_MASK] :
-          exp (self->c * dt);
-}
+extern inline double time_amortization_table_fast_exp (time_amortization_table_t *self, int dt);
+//{
+//  return (dt < AMORTIZATION_TABLE_SQRT_SIZE * AMORTIZATION_TABLE_SQRT_SIZE) ?
+//          self->hi_exp[dt >> AMORTIZATION_TABLE_SQRT_SIZE_BITS] * self->lo_exp[dt & AMORTIZATION_TABLE_SQRT_SIZE_MASK] :
+//          exp (self->c * dt);
+//}
 #endif
