@@ -67,10 +67,14 @@ int random_merge_end_query (struct connection *c, const char *key, int key_len, 
     }
   }
 
+  int c_len, f_len;
+
+#if OPENSSL_VERSION_NUMBER < 0x10100000L
+  // for openssl 1.0.2
   EVP_CIPHER_CTX e;
   EVP_CIPHER_CTX_init (&e);
+
   EVP_EncryptInit_ex (&e, EVP_aes_256_cbc(), NULL, R, R + 32);
-  int c_len, f_len;
 
   if (!EVP_EncryptUpdate (&e, A, &c_len, R + 64, max_bytes - 64)) {
     vkprintf (1, "EVP_EncryptUpdate fail.\n");
@@ -83,7 +87,30 @@ int random_merge_end_query (struct connection *c, const char *key, int key_len, 
     EVP_CIPHER_CTX_cleanup (&e);
     return 0;
   }
+
   EVP_CIPHER_CTX_cleanup (&e);
+#else
+  // for openssl 1.1.0
+  EVP_CIPHER_CTX *e;
+  e = EVP_CIPHER_CTX_new ();
+
+  EVP_EncryptInit_ex (e, EVP_aes_256_cbc(), NULL, R, R + 32);
+
+   if (!EVP_EncryptUpdate (e, A, &c_len, R + 64, max_bytes - 64)) {
+    vkprintf (1, "EVP_EncryptUpdate fail.\n");
+    EVP_CIPHER_CTX_free (e);
+    return 0;
+  }
+
+  if (!EVP_EncryptFinal_ex (e, A + c_len, &f_len)) {
+    vkprintf (1, "EVP_EncryptFinal_ex fail.\n");
+    EVP_CIPHER_CTX_free (e);
+    return 0;
+  }
+
+  EVP_CIPHER_CTX_free (e);
+#endif
+
   f_len += c_len;
 
   int res = f_len < data[0].res_bytes ? f_len : data[0].res_bytes;

@@ -115,13 +115,30 @@ int rsa_encrypt (const char *const private_key_name, void *input, int ilen, void
     goto clean;
   }
   memcpy (b + 4 + rsa_size, iv, 32);
+
+
+  int c_len, f_len;
+
+#if OPENSSL_VERSION_NUMBER < 0x10100000L
+  // for openssl 1.0.2
   EVP_CIPHER_CTX e;
   EVP_CIPHER_CTX_init (&e);
+
   EVP_EncryptInit_ex (&e, EVP_aes_256_cbc(), NULL, key, iv);
-  int c_len, f_len;
   EVP_EncryptUpdate (&e, b + 4 + rsa_size + 32, &c_len, input, ilen);
   EVP_EncryptFinal_ex (&e, b + 4 + rsa_size + 32 + c_len, &f_len);
   EVP_CIPHER_CTX_cleanup (&e);
+#else
+  // for openssl 1.1.0
+  EVP_CIPHER_CTX *e;
+  e = EVP_CIPHER_CTX_new ();
+
+  EVP_EncryptInit_ex (e, EVP_aes_256_cbc(), NULL, key, iv);
+  EVP_EncryptUpdate (e, b + 4 + rsa_size + 32, &c_len, input, ilen);
+  EVP_EncryptFinal_ex (e, b + 4 + rsa_size + 32 + c_len, &f_len);
+  EVP_CIPHER_CTX_free (e);
+#endif
+  
   int r = 4 + rsa_size + 32 + c_len + f_len;
   vkprintf (3, "c_len = %d, f_len = %d\n", c_len, f_len);
   assert (r <= *olen);
@@ -208,15 +225,31 @@ int rsa_decrypt (const char *const key_name, int public_key, void *input, int il
   }
   *output = a;
   int p_len = 0;
+
+  int f_len = 0;
+
+#if OPENSSL_VERSION_NUMBER < 0x10100000L
+  // for openssl 1.0.2
   EVP_CIPHER_CTX e;
   EVP_CIPHER_CTX_init (&e);
+
   EVP_DecryptInit_ex (&e, EVP_aes_256_cbc(), NULL, key, iv);
   EVP_DecryptUpdate (&e, a, &p_len, input + 4 + rsa_size + 32, aes_cipher_len);
-  int f_len = 0;
   EVP_DecryptFinal_ex (&e, input + 4 + rsa_size + 32 + p_len, &f_len);
+  EVP_CIPHER_CTX_cleanup (&e);
+#else
+  // for openssl 1.1.0
+  EVP_CIPHER_CTX *e;
+  e = EVP_CIPHER_CTX_new ();
+
+  EVP_DecryptInit_ex (e, EVP_aes_256_cbc(), NULL, key, iv);
+  EVP_DecryptUpdate (e, a, &p_len, input + 4 + rsa_size + 32, aes_cipher_len);
+  EVP_DecryptFinal_ex (e, input + 4 + rsa_size + 32 + p_len, &f_len);
+  EVP_CIPHER_CTX_free (e);
+#endif
+
   vkprintf (3, "p_len = %d, f_len = %d\n", p_len, f_len);
   *olen = p_len + f_len;
-  EVP_CIPHER_CTX_cleanup (&e);
 
   clean:
   if (f != NULL) {
